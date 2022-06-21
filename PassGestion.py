@@ -10,6 +10,8 @@ from tkinter import messagebox
     #usar contraseña hashed para desbloquear BDs
 #sistem cambiar datos
 
+Variablecdd = 'hola'
+
 class bd():
     pass
 
@@ -83,8 +85,8 @@ class Aplication(util, bd):
     bgu = '#363636'
     bgu2 = '#575757'
     fgu = '#FFFFFF'
-    pathBD = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.xlsx')
-    pathPass = os.path.join(os.path.dirname(os.path.abspath(__file__)),'pass.cock')
+    pathBD = os.path.join(os.path.dirname(__file__),'pass.db')
+    pathPass = os.path.join(os.path.dirname(__file__),'pass.cock')
 
     def __init__(self):
         self.window = Tk()
@@ -150,11 +152,35 @@ class Aplication(util, bd):
         else:
             Label(self.frameUnlock, text='Cree una contraseña', bg=self.bgu, fg=self.fgu).grid(column=0, row=0,pady=10)
             self.entryPassVeri = Entry(self.frameUnlock,show='*')
-            self.entryPassVeri.grid(column=0,row=2,ipady=5)
+            self.entryPassVeri.grid(column=0,row=2,ipady=5, pady=5)
             self.checkPassCreation = True
-            
+        
+        self.hideOption = True
+
+        botonShowPass = Button(self.frameUnlock, text='*', command=self.AccionbotonShowPass)
+        botonShowPass.grid(column=1,row=2,padx=10)
+
         self.botonEnter = Button(self.frameUnlock, text='Enter',command= self.AccionbotonEnter)
-        self.botonEnter.grid(column=1,row=1,padx=20)
+        self.botonEnter.grid(column=1,row=1,padx=10)
+
+#optimizar AccionbotonEnter y AccionbotonShowPass
+    def AccionbotonShowPass(self):
+        if self.checkPassCreation:
+            if self.hideOption:
+                self.entryPass.config(show='')
+                self.entryPassVeri.config(show='')
+                self.hideOption = False
+            else:
+                self.entryPass.config(show='*')
+                self.entryPassVeri.config(show='*')
+                self.hideOption = True
+        else:
+            if self.hideOption:
+                self.entryPass.config(show='')
+                self.hideOption = False
+            else:
+                self.entryPass.config(show='*')
+                self.hideOption = True
 
     def AccionbotonEnter(self):
         canCheck = True
