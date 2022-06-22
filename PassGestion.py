@@ -10,8 +10,6 @@ from tkinter import messagebox
     #usar contraseña hashed para desbloquear BDs
 #sistem cambiar datos
 
-Variablecdd = 'hola'
-
 class bd():
     pass
 
