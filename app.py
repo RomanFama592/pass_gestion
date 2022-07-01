@@ -1,7 +1,10 @@
-import os, sqlite3 as sql, pandas as pd
+import os, pandas as pd
+from scripts.util import util
+from scripts.bd import bd
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+
 
 #añadir boton de 'ver contraseñas'
 #añadir sistema de paginas para la visualizacion de la informacion
@@ -10,80 +13,11 @@ from tkinter import messagebox
     #usar contraseña hashed para desbloquear BDs
 #sistem cambiar datos
 
-class bd():
-    pass
-
-class util():
-
-    def createPassword(self, password, salt):
-        '''Salt == 0 se genera uno nuevo'''
-        from bcrypt import gensalt, hashpw
-        password = bytes(password, 'utf-8')
-        if salt == 0:
-            salts = gensalt(16)
-        else:
-            salts = salt
-        hashed = hashpw(password,salts)
-        return [hashed, salts]
-
-    def passcreation(self, pathPass, inputPass):
-        with open(pathPass, 'wb') as passwordHash:
-            contraHash = self.createPassword(inputPass,0)
-            passwordHash.write(contraHash[0])
-            passwordHash.write(b' ')
-            passwordHash.write(contraHash[1])
-
-    def passExistverification(self, pathPass, inputPass):
-        if os.path.exists(pathPass) == False:
-            self.passcreation(pathPass, inputPass)
-        else:
-            with open(pathPass, 'rb') as passwordHash:
-                passHashedcompro = passwordHash.readline().split(b' ')
-            if len(passHashedcompro) != 2:
-                self.passcreation(pathPass, inputPass)
-
-    def passVerification(self, pathPass, inputPass):
-        self.passExistverification(pathPass, inputPass)
-
-        with open(pathPass, 'rb') as passwordHash:
-            passHashed = passwordHash.readline().split(b' ')
-        passInput = self.createPassword(inputPass, passHashed[1])
-        return passHashed[0] == passInput[0]
-
-    def browsePath(self, browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
-        """- str(title) = titulo de ventana por ejemplo 'Seleccione un archivo...' [obligatorio]
-        - bool(browseCarpeta) = si lo buscado es una carpeta tendria que ingresar True, de lo contrario False [obligatorio]
-        - str(mainTypeText) = lo que dice el selector de archivos por ejemplo 'txt files [opcional si browseCarpeta es False]'
-        - str(mainType) = el tipo de archivo por ejemplo '*txt' [opcional si browseCarpeta es False]"""
-        from tkinter import filedialog as filed
-        root = Tk()
-        root.withdraw()
-        root.attributes('-topmost', True)
-        if browseCarpeta == True:
-            path = filed.askdirectory(initialdir = os.path.dirname(os.path.abspath(__file__)),title = title)
-        else:
-            path = filed.askopenfilename(initialdir = os.path.dirname(os.path.abspath(__file__)),title = title, filetypes = ((mainTypeText, mainType),("All files", "*.*")))
-        return path
-
-    def resolucionPantallawithcentered(self, r):
-        ''' r = Ventana de Tkinker '''
-        altura_pantalla = r.winfo_screenheight()
-        anchura_pantalla = r.winfo_screenwidth()
-        pantalla = [anchura_pantalla, altura_pantalla]
-        return pantalla
-
-    def timeNow(self):
-        from time import localtime
-        tiempo = localtime()
-        #tiempo = str(tiempo.tm_hour) + ':' + str(tiempo.tm_min) + ':' + str(tiempo.tm_sec) + '.'
-        tiempo = (tiempo.tm_min*60) + tiempo.tm_sec
-        return tiempo
-
 class Aplication(util, bd):
     bgu = '#363636'
     bgu2 = '#575757'
     fgu = '#FFFFFF'
-    pathBD = os.path.join(os.path.dirname(__file__),'pass.db')
+    pathBD = os.path.join(os.path.dirname(__file__),'index.db')
     pathPass = os.path.join(os.path.dirname(__file__),'pass.cock')
 
     def __init__(self):
