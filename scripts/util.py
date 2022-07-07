@@ -1,10 +1,11 @@
-import os
+import os, pandas as pd
 from tkinter import filedialog as filed
 from tkinter import Tk
 from time import localtime
 from bcrypt import gensalt, hashpw
+from scripts.bd import bd
 
-class util():
+class util(bd):
 
     def createPassword(self, password, salt):
         '''Salt == 0 se genera uno nuevo'''
@@ -13,32 +14,29 @@ class util():
             salts = gensalt(16)
         else:
             salts = salt
-        hashed = hashpw(password,salts)
-        return [hashed, salts]
+        hashed = hashpw(password, salts)
+        return (hashed, salts)
 
-    def passcreation(self, pathPass, inputPass):
-        with open(pathPass, 'wb') as passwordHash:
-            contraHash = self.createPassword(inputPass,0)
-            passwordHash.write(contraHash[0])
-            passwordHash.write(b' ')
-            passwordHash.write(contraHash[1])
+    def passSave(self, pathBD, inputPass):
+        password, salt = self.createPassword(inputPass, 0)
+        self.query(pathBD,"""insert into userconfig (password, salt) values (?, ?)""", (password, salt))
 
-    def passExistverification(self, pathPass, inputPass):
-        if os.path.exists(pathPass) == False:
-            self.passcreation(pathPass, inputPass)
+    def passExistverification(self, pathBD, inputPass):
+        if os.path.exists(pathBD) == False:
+            self.initDB(pathBD)
+            self.passSave(pathBD, inputPass)
         else:
-            with open(pathPass, 'rb') as passwordHash:
-                passHashedcompro = passwordHash.readline().split(b' ')
-            if len(passHashedcompro) != 2:
-                self.passcreation(pathPass, inputPass)
+            passwordAndSalt = self.cursorToListInList(self.query(pathBD, """select password, salt from userconfig"""))
+            if passwordAndSalt[0][0] != '' and passwordAndSalt[0][1] != '':
+                pass
+            else:
+                self.query(pathBD, """delete from userconfig where id = 1""")
+                self.passSave(pathBD, inputPass)
 
-    def passVerification(self, pathPass, inputPass):
-        self.passExistverification(pathPass, inputPass)
-
-        with open(pathPass, 'rb') as passwordHash:
-            passHashed = passwordHash.readline().split(b' ')
-        passInput = self.createPassword(inputPass, passHashed[1])
-        return passHashed[0] == passInput[0]
+    def passVerification(self, pathBD, inputPass):
+        self.passExistverification(pathBD, inputPass)
+        passwordAndSaltDB = self.cursorToListInList(self.query(pathBD, """select password, salt from userconfig"""))
+        return self.createPassword(inputPass, passwordAndSaltDB[1]) == passwordAndSaltDB
 
     def browsePath(self, browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
         """- str(title) = titulo de ventana por ejemplo 'Seleccione un archivo...' [obligatorio]
@@ -66,3 +64,14 @@ class util():
         #tiempo = str(tiempo.tm_hour) + ':' + str(tiempo.tm_min) + ':' + str(tiempo.tm_sec) + '.'
         tiempo = (tiempo.tm_min*60) + tiempo.tm_sec
         return tiempo
+
+    def LoadPasswordOpera(self):
+        """Devuelve un Data frame"""
+        path = self.browsePath(False, 'Select Opera password file', 'CSV files', '*.csv')
+        PasswordsOri = pd.read_csv(path,sep=',', index_col=False)
+        PasswordsOri = PasswordsOri.fillna('')
+        PasswordsOri.to_excel(self.pathBD, sheet_name='Account', index=False)
+
+if __name__ == '__main__':
+    a = util()
+    print(a.passVerification('test.db','roman'))
