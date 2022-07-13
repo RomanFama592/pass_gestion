@@ -1,6 +1,5 @@
 import os
 from scripts.util import util
-from scripts.bd import bd
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -20,55 +19,43 @@ class Aplication(util):
     bgu = '#363636'
     bgu2 = '#575757'
     fgu = '#FFFFFF'
-    pathBD = os.path.join(os.path.dirname(__file__),'index.db')
+    formatBD = '.bdpg'
+    pathBD = f'index{formatBD}'
+    key = 'SaveThisSecretKey.key'
 
     def __init__(self):
         self.window = Tk()
 
         (screensidex, screensidey) = self.resolucionPantallawithcentered(self.window)
-        self.window.geometry('{}x{}+{}+{}'.format(int(screensidex//1.5), int(screensidey//1.5),
-        screensidex//6, screensidey//6))
+        self.window.geometry('{}x{}+{}+{}'.format(int(screensidex//1.5), int(screensidey//1.5), screensidex//6, screensidey//6))
         self.window.minsize(640,480)
         self.window.title('PassGestion')
         self.window.config(bg=self.bgu)
         self.window.attributes('-topmost', True)
-        self.window.columnconfigure(0, weight=1)
-        self.window.columnconfigure(1, weight=2)
-        self.window.rowconfigure(0,weight=1)
 
         self.unlock()
 
         self.window.protocol("WM_DELETE_WINDOW", self.validacionCerrar)
         self.window.mainloop()
 
+#retocar interface
     def interface(self):
-        FrameOptions = Frame(self.window, bg=self.bgu2)
-        FrameOptions.grid(row=0,column=1,sticky=NSEW)
-        FrameOptions.rowconfigure(1,weight=1)
-        FrameOptions.columnconfigure(0,weight=1)
-
-        FrameList = Frame(self.window,bg=self.bgu, relief="flat")
-        FrameList.grid(row=0,column=0,sticky=NSEW)
-        FrameList.rowconfigure(1,weight=2)
-        FrameList.columnconfigure(0,weight=1)
-
-
+        frameMain = Frame(self.window, bg=self.bgu)
+        frameMain.columnconfigure(0,weight=3)
+        frameMain.grid()
+        
         self.listaTipos = ['Account', 'Card']
-        self.valuemenuTipos = StringVar(FrameList)
-        self.menuTipos = ttk.OptionMenu(FrameList, self.valuemenuTipos, 'Seleccione el tipo', *self.listaTipos, command= self.AccionMenuTipos)
-        self.menuTipos.grid(row=0,column=0,sticky=NSEW,padx=10,pady=10)
-
-
-        FrameInList = Frame(FrameList,bg=self.bgu2)
-        FrameInList.grid(row=1,column=0,sticky=NSEW,padx=10,pady=10)
-
+        self.valuemenuTipos = StringVar(frameMain)
+        self.menuTipos = ttk.OptionMenu(frameMain, self.valuemenuTipos, 'Seleccione el tipo', *self.listaTipos, command= self.AccionMenuTipos)
+        self.menuTipos.grid(column=0, columnspan=2,row=0)
+        
     def unlock(self):
         self.frameUnlock = Frame(self.window, bg=self.bgu)
         self.frameUnlock.grid()
         
         self.entryPass = Entry(self.frameUnlock,show='*')
-        self.entryPass.grid(column=0,row=1,ipady=5)
         self.entryPass.focus_set()
+        self.entryPass.grid(column=0,row=1,ipady=5)
 
         if os.path.exists(self.pathBD):
             Label(self.frameUnlock, text='Ingrese la contraseña existente:', bg=self.bgu, fg=self.fgu).grid(column=0, row=0,pady=10)
@@ -81,8 +68,8 @@ class Aplication(util):
         
         self.hideOption = True
 
-        conectBD = Button(self.frameUnlock, text='conectar base de datos', command=self.AccionconectBD)
-        conectBD.grid(column=2, row=0)
+        botonconectBD = Button(self.frameUnlock, text='conectar base de datos', command=self.AccionbotonconectBD)
+        botonconectBD.grid(column=2, row=0)
 
         botonShowPass = Button(self.frameUnlock, text='*', command=self.AccionbotonShowPass)
         botonShowPass.grid(column=1,row=2,padx=10)
@@ -90,7 +77,7 @@ class Aplication(util):
         self.botonEnter = Button(self.frameUnlock, text='Enter',command= self.AccionbotonEnter)
         self.botonEnter.grid(column=1,row=1,padx=10)
 
-#optimizar AccionbotonEnter y AccionbotonShowPass
+#botones y acciones de aplicacion
     def AccionbotonShowPass(self):
         if self.checkPassCreation:
             if self.hideOption:
@@ -111,6 +98,7 @@ class Aplication(util):
 
     def AccionbotonEnter(self):
         canCheck = True
+        initT = self.timeNow()
         if self.checkPassCreation:
             self.entryPassVeri.config(state=DISABLED)
         self.botonEnter.config(state=DISABLED)
@@ -134,9 +122,11 @@ class Aplication(util):
             else:
                 self.frameUnlock.destroy()
                 self.interface()
+        f = self.timeNow()
+        print(f'bd {f - initT}s')
 
-    def AccionconectBD(self):
-        self.pathBD = self.browsePath('Conectar base de datos:', False, 'db files', '*.db')
+    def AccionbotonconectBD(self):
+        self.pathBD = self.browsePath('Conectar base de datos:', False, f'{self.formatBD} files', f'*{self.formatBD}')
         self.frameUnlock.destroy()
         self.unlock()
 
