@@ -1,5 +1,4 @@
 import os, pandas as pd
-import sqlite3
 from tkinter import filedialog as filed
 from tkinter import Tk
 from time import localtime
@@ -38,33 +37,30 @@ class util(bd):
 
     def passSave(self, pathBD, inputPass):
         (self.password, self.salt) = self.createPassword(inputPass, 0)
-        self.query(pathBD, """insert into userconfigs (password, salt) values (?, ?)""", (self.password, self.salt))
+        print(self.password, self.salt)
+        self.query(pathBD, "insert into userconfigs (password, salt) values (?, ?)", (self.password, self.salt))
 
-    #BUG01
     def passExistverification(self, pathBD, inputPass):
         if os.path.exists(pathBD) == False:
             self.initDB(pathBD)
             self.passSave(pathBD, inputPass)
+            return True
         else:
-            passwordAndSalt = self.query(pathBD, """select password, salt from userconfigs""", True)
-            a = self.query(pathBD, """SELECT name from sqlite_master where type= 'table'""", True)
-            print(a)
-            for table in a:
-                if table[0] != "sqlite_sequence":
-                    self.query(pathBD, f"DROP TABLE {table[0]}")
-            self.initDB(pathBD)
-                
-            if passwordAndSalt[0][0] == '' and passwordAndSalt[0][1] == '':
-                self.query(pathBD, """delete * from userconfigs""")
-                self.passSave(pathBD, inputPass)
-            self.passSave(pathBD, inputPass)
+            if self.verifyBD(pathBD):
+                (self.password, self.salt) = self.query(pathBD, 'select password, salt from userconfigs', returnData=True)
+                return True
+            else:
+                return False
 
-            
     def passVerification(self, pathBD, inputPass):
-        self.passExistverification(pathBD, inputPass)
-        return self.createPassword(inputPass, self.salt) == (self.password, self.salt)
-        del self.password, self.salt
+        if self.passExistverification(pathBD, inputPass):
+            return self.createPassword(inputPass, self.salt) == (self.password, self.salt)
+            del self.password, self.salt
+        else:
+            return [False, False]
+            del self.password, self.salt
 
+#funciones utiles
     def browsePath(self, browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
         """- str(title) = titulo de ventana por ejemplo 'Seleccione un archivo...' [obligatorio]
         - bool(browseCarpeta) = si lo buscado es una carpeta tendria que ingresar True, de lo contrario False [obligatorio]

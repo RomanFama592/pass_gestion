@@ -16,40 +16,40 @@ f'C:/Users/{getuser()}/Documents'
 #sistem cambiar datos
 
 class Aplication(util):
+    #declarando variables de entorno
     bgu = '#363636'
     bgu2 = '#575757'
     fgu = '#FFFFFF'
     formatBD = '.bdpg'
+    formatKey = '.key'
     pathBD = f'index{formatBD}'
-    key = 'SaveThisSecretKey.key'
+    pathKey = f'Guardalabien{formatKey}'
 
     def __init__(self):
         self.window = Tk()
-
+        #inicializando la ventana
         (screensidex, screensidey) = self.resolucionPantallawithcentered(self.window)
         self.window.geometry('{}x{}+{}+{}'.format(int(screensidex//1.5), int(screensidey//1.5), screensidex//6, screensidey//6))
         self.window.minsize(640,480)
         self.window.title('PassGestion')
         self.window.config(bg=self.bgu)
-        self.window.attributes('-topmost', True)
 
-        self.unlock()
+        self.unlock() #pantalla de login
 
         self.window.protocol("WM_DELETE_WINDOW", self.validacionCerrar)
         self.window.mainloop()
 
-#retocar interface
-    def interface(self):
+    def interface(self): #interface no finalizada
         frameMain = Frame(self.window, bg=self.bgu)
         frameMain.columnconfigure(0,weight=3)
         frameMain.grid()
         
-        self.listaTipos = ['Account', 'Card']
+        self.listaTipos = ['Account', 'Card', 'Economy']
         self.valuemenuTipos = StringVar(frameMain)
         self.menuTipos = ttk.OptionMenu(frameMain, self.valuemenuTipos, 'Seleccione el tipo', *self.listaTipos, command= self.AccionMenuTipos)
         self.menuTipos.grid(column=0, columnspan=2,row=0)
         
-    def unlock(self):
+    def unlock(self): #unlock finalizado pero no retocado
         self.frameUnlock = Frame(self.window, bg=self.bgu)
         self.frameUnlock.grid()
         
@@ -57,7 +57,7 @@ class Aplication(util):
         self.entryPass.focus_set()
         self.entryPass.grid(column=0,row=1,ipady=5)
 
-        if os.path.exists(self.pathBD):
+        if os.path.exists(self.pathBD): #verificacion de si ya existe una bd en la ruta predefinida
             Label(self.frameUnlock, text='Ingrese la contraseña existente:', bg=self.bgu, fg=self.fgu).grid(column=0, row=0,pady=10)
             self.checkPassCreation = False
         else:
@@ -99,6 +99,7 @@ class Aplication(util):
     def AccionbotonEnter(self):
         canCheck = True
         initT = self.timeNow()
+        
         if self.checkPassCreation:
             self.entryPassVeri.config(state=DISABLED)
         self.botonEnter.config(state=DISABLED)
@@ -113,22 +114,36 @@ class Aplication(util):
                 canCheck = False
 
         if canCheck:
-            if self.passVerification(self.pathBD, self.entryPass.get()) == False:
+            validation = self.passVerification(self.pathBD, self.entryPass.get())
+            if validation == False:
                 messagebox.showerror(message='contraseña incorrecta')
                 self.botonEnter.config(state=NORMAL)
                 self.entryPass.config(state=NORMAL)
                 if self.checkPassCreation:
                     self.entryPassVeri.config(state=NORMAL)
-            else:
+            elif validation == [False, False]:
+                messagebox.showerror(message='la base de datos esta dañada')
+                self.botonEnter.config(state=NORMAL)
+                self.entryPass.config(state=NORMAL)
+                if self.checkPassCreation:
+                    self.entryPassVeri.config(state=NORMAL)
+            elif validation == True:
                 self.frameUnlock.destroy()
                 self.interface()
+            else:
+                validation
+        
         f = self.timeNow()
         print(f'bd {f - initT}s')
 
     def AccionbotonconectBD(self):
-        self.pathBD = self.browsePath('Conectar base de datos:', False, f'{self.formatBD} files', f'*{self.formatBD}')
-        self.frameUnlock.destroy()
-        self.unlock()
+        newpathBD = self.browsePath('Conectar base de datos:', False, f'{self.formatBD} files', f'*{self.formatBD}')
+        if self.verifyBD(newpathBD):
+            self.pathBD = newpathBD
+            self.frameUnlock.destroy()
+            self.unlock()
+        else:
+            messagebox.showerror(message='base de datos dañada o no funcional')
 
     def AccionMenuTipos(self, *args):
         if self.valuemenuTipos.get() == self.listaTipos[0]:
