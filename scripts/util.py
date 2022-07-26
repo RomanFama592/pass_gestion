@@ -10,53 +10,27 @@ else: from bd import bd
 class util(bd):
 
 #encriptado
-    def generateKey(self, path):
-        with open(path, 'wb') as key:
+    def generateKey(self):
+        with open(self.pathKey, 'wb') as key:
             key.write(Fernet.generate_key())
 
-    def generateClavePorPass(path, mensaje: str):
-        b6432b = b64.urlsafe_b64encode(sha256(mensaje.encode()).digest())
-        with open(path, 'wb') as key:
-            key.write(b6432b)
+    def generateKeyPorPass(self, mensaje: str):
+        with open(self.pathKey, 'wb') as key:
+            key.write(b64.urlsafe_b64encode(sha256(mensaje.encode()).digest()))
 
-    def encryptData(self, data: bytes, keypath):
-        with open(keypath, 'rb') as keyfile:
+    def encryptData(self, data: bytes):
+        with open(self.pathKey, 'rb') as keyfile:
             f = Fernet(keyfile.read())
         return f.encrypt(data)
 
-    def desEncryptData(self, data: bytes, keypath):
-        with open(keypath, 'rb') as keyfile:
+    def desEncryptData(self, data: bytes):
+        with open(self.pathKey, 'rb') as keyfile:
             f = Fernet(keyfile.read())
         return f.decrypt(data)
 
 #password
     def createPassword(self, password: str):
         return sha256(password.encode()).digest()
-
-    def passSave(self, pathBD, inputPass):
-        self.password = self.createPassword(inputPass, 0)
-        print(self.password)
-        self.query(pathBD, "insert into userconfigs (password) values (?)", (self.password))
-
-    def passExistverification(self, pathBD, inputPass):
-        if os.path.exists(pathBD) == False:
-            self.initDB(pathBD)
-            self.passSave(pathBD, inputPass)
-            return True
-        else:
-            if self.verifyBD(pathBD):
-                self.password = self.query(pathBD, 'select password from userconfigs', returnData=True)
-                return True
-            else:
-                return False
-
-    def passVerification(self, pathBD, inputPass):
-        if self.passExistverification(pathBD, inputPass):
-            return self.createPassword(inputPass) == self.password
-            del self.password
-        else:
-            return [False, False]
-            del self.password
 
 #funciones utiles
     def browsePath(self, browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
@@ -73,10 +47,9 @@ class util(bd):
             path = filed.askopenfilename(title = title, filetypes = ((mainTypeText, mainType),("All files", "*.*")))
         return path
 
-    def resolucionPantallawithcentered(self, r):
-        ''' r = Ventana de Tkinker '''
-        altura_pantalla = r.winfo_screenheight()
-        anchura_pantalla = r.winfo_screenwidth()
+    def resolucionPantallawithcentered(self, window):
+        altura_pantalla = window.winfo_screenheight()
+        anchura_pantalla = window.winfo_screenwidth()
         pantalla = [anchura_pantalla, altura_pantalla]
         return pantalla
 

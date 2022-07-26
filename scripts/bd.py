@@ -1,7 +1,11 @@
-import sqlite3 as sql
+import sqlite3 as sql, os
 
 class bd():
+    bgu = '#363636'
+    bgu2 = '#575757'
+    fgu = '#FFFFFF'
 
+    #mantener userconfigs en el ultimo puesto.
     tables = [('accounts', """(
                             id integer not null primary key autoincrement,
                             namepages blob not null,
@@ -18,34 +22,31 @@ class bd():
                             )"""),
                 ('userconfigs',"""(
                             id integer not null primary key autoincrement,
-                            password blob not null,
-                            salt blob not null  
+                            initWord blob not null
+                            hashOfInitWord blob not null,
                             )""")]
 
-    def initDB(self, bd):
-        conexion = sql.connect(bd)
-        for i in range(len(self.tables)): self.query(bd, f"CREATE TABLE IF NOT EXISTS {self.tables[i][0]} {self.tables[i][1]}")
-        conexion.close()
-    
-    def verifyBD(self, bd):
-        #tablesInBD = self.query(bd,'SELECT * FROM sqlite_master WHERE type = "table";', returnData=True)
-        tablesInBD = self.query(bd,"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';", returnData=True)
-        #print(tablesInBD)
-        for item1, item2 in zip(tablesInBD, self.tables):
-            print(item1[0], item2[0])
-            if item1[0] == item2[0]:
-                pass
-            else: return False
+    pathOrigin = os.getcwd()
+    initWord = 'nene que se porta mal'
+    formatBD = '.bdpg'
+    formatKey = '.key'
+    pathBD = f'{pathOrigin}\index{formatBD}'
+    pathKey = f'{pathOrigin}\GuardalaBien{formatKey}'
 
-        (password, salt) = self.query(bd, f'select password, salt from userconfigs', returnData=True)
-        #print(password, salt)
-        if password == None and salt == None:
-            return False
+    def initDB(self):
+        if not os.path.exists(self.pathBD) & os.path.exists(self.pathKey):
+            self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
+            self.generateKey()
+            self.query(f"insert into {self.tables[-1][0]}(initWord, hashOfInitWord) values (?, ?)" (self.initWord, self.encryptData(bytes(self.initWord))))
+
+    
+    def verifyBD(self):
+        print(self.query(f"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'", returnData=True))
         return True
 
-    def query(self, bd, command, parameters = (), returnData = False, executeMany = False):
+    def query(self, command, parameters = (), returnData = False, executeMany = False):
         """si returnData es True retornara una lista con tuplas de las filas y si es False no retorna nada."""
-        conexion = sql.connect(bd)
+        conexion = sql.connect(self.pathBD)
         if executeMany:
             cursor = conexion.executemany(command, parameters)
         else:
