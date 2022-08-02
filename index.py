@@ -1,7 +1,7 @@
-from scripts.util import util
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+import os
 
 """from getpass import getuser
 f'C:/Users/{getuser()}/Documents'"""
@@ -15,7 +15,14 @@ f'C:/Users/{getuser()}/Documents'"""
     #usar contraseña hashed para desbloquear BDs
 #sistem cambiar datos
 
-class Aplication(util):
+pathOrigin = os.getcwd()
+initWord = 'nene que se porta mal'
+formatBD = '.bdpg'
+formatKey = '.key'
+pathBD = f'{pathOrigin}\index{formatBD}'
+pathKey = f'{pathOrigin}\GuardalaBien{formatKey}'
+
+class Aplication():
     def __init__(self, window: Tk):
         self.window = window
         #inicializando la ventana
@@ -86,6 +93,11 @@ class Aplication(util):
     def validacionCerrar(self):
         if messagebox.askokcancel("Quit", "Seguro que quieres salir?"):
             self.window.destroy()
+
+    bgu = '#363636'
+    bgu2 = '#575757'
+    fgu = '#FFFFFF'
+
 
 window = Tk()
 app = Aplication(window)
