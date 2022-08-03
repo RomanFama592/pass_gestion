@@ -48,13 +48,12 @@ def cursorToListInList(Cursor: sql.Cursor):
         return lista
 
 #encriptado
-def generateKey(pathKey):
+def generateKey(pathKey: str, mensaje: str = ""):
     with open(pathKey, 'wb') as key:
-        key.write(Fernet.generate_key())
-
-def generateKeyPorPass(pathKey, mensaje: str):
-    with open(pathKey, 'wb') as key:
-        key.write(b64.urlsafe_b64encode(createPassword(mensaje)))
+        if mensaje == "":
+            key.write(Fernet.generate_key())
+        else:
+            key.write(b64.urlsafe_b64encode(createPassword(mensaje)))        
 
 def encryptData(pathKey, data: bytes):
     with open(pathKey, 'rb') as keyfile:
