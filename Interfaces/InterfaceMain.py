@@ -1,4 +1,4 @@
-from kivy.uix.screenmanager import Screen
+from kivymd.uix.screen import MDScreen
 from kivy.lang.builder import Builder
 
 KV = """
@@ -7,6 +7,6 @@ KV = """
 #</KvLang>
 """
 
-class InterfaceMain(Screen):
+class InterfaceMain(MDScreen):
     name = 'InterfaceMain'
     Builder.load_string(KV)
