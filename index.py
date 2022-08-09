@@ -1,5 +1,5 @@
-from kivy.lang.builder import Builder
 from kivymd.app import MDApp
+
 import os
 from Interfaces.ScreenManager import MainScreenManager
 
@@ -18,6 +18,8 @@ pathKey = f'{pathOrigin}\GuardalaBien{formatKey}'
 class AppMain(MDApp):
     title = 'PassGestion'
     def build(self):
+        self.theme_cls.primary_palette = 'BlueGray'
+        self.theme_cls.primary_hue = '500'
         return MainScreenManager()
 
 AppMain().run()
