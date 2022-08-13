@@ -5,25 +5,13 @@ from hashlib import sha256
 
 #mantener userconfigs en el ultimo puesto.
 #RESOLVER
-tables = [('accounts', """(
-                        id integer not null primary key autoincrement,
-                        namepages blob not null,
-                        urls blob not null,
-                        users blob,
-                        passwords blob
-                        )"""),
-                    ('cards', """(
+tables = [('cards', """(
                         id integer not null primary key autoincrement,
                         nameCards blob not null,
                         numberCards blob not null,
                         expirationDate blob not null,
                         codSeg blob not null
-                        )"""),
-                    ('userconfigs',"""(
-                        id integer not null primary key autoincrement,
-                        initWord blob not null
-                        hashOfInitWord blob not null,
-                        )""")]
+                        )"""),]
 
 #base de datos
 def query(pathBD, command, parameters = (), returnData = False, executeMany = False):
@@ -39,7 +27,12 @@ def query(pathBD, command, parameters = (), returnData = False, executeMany = Fa
     conexion.close()
 
 def cursorToListInList(Cursor: sql.Cursor):
-    lista = [row for row in Cursor]
+    lista = []
+    for row in Cursor:
+        if len(row) == 1:
+            lista.append(row[0])
+        elif len(row) > 1:
+            lista.append(row)
     if len(lista) == 0:
         return None
     elif len(lista) == 1:
@@ -53,17 +46,24 @@ def generateKey(pathKey: str, mensaje: str = ""):
         if mensaje == "":
             key.write(Fernet.generate_key())
         else:
-            key.write(b64.urlsafe_b64encode(createPassword(mensaje)))        
+            key.write(b64.urlsafe_b64encode(createPassword(mensaje)))
+
 
 def encryptData(pathKey, data: bytes):
-    with open(pathKey, 'rb') as keyfile:
-        f = Fernet(keyfile.read())
-    return f.encrypt(data)
+    try:
+        with open(pathKey, 'rb') as keyfile:
+            f = Fernet(keyfile.read())
+        return f.encrypt(data)
+    except ValueError:
+        return None
 
 def desEncryptData(pathKey, data: bytes):
-    with open(pathKey, 'rb') as keyfile:
-        f = Fernet(keyfile.read())
-    return f.decrypt(data)
+    try:
+        with open(pathKey, 'rb') as keyfile:
+            f = Fernet(keyfile.read())
+            return f.decrypt(data)
+    except ValueError:
+        return None
 
 #password
 def createPassword(password: str):

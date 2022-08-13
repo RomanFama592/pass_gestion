@@ -1,19 +1,41 @@
 from tkinter import Tk, filedialog as filed
 from time import localtime
-import bd, os
+import os
 if __name__ != '__main__':
-    import UClasses.bd
+    import UClasses.bd as bd
+else: import bd
 
 
-def initDB(pathBD, pathKey, tables, initWord):
+def initDB(pathBD, pathKey, table, initWord):
     if not os.path.exists(pathBD) & os.path.exists(pathKey):
-        bd.query(f"CREATE TABLE IF NOT EXISTS {tables[-1][0]} {tables[-1][1]}")
-        bd.generateKey()
-        bd.query(f"insert into {bd.tables[-1][0]}(initWord, hashOfInitWord) values (?, ?)" (initWord, bd.encryptData(bytes(initWord))))
+        bd.query(pathBD, f"CREATE TABLE IF NOT EXISTS {table[0]} {table[1]}")
+        bd.generateKey(pathKey)
+        hashinitWord = bd.encryptData(pathKey, initWord.encode())
+        if hashinitWord != (None):
+            bd.query(pathBD, f"insert into {table[0]} (initWord, hashInitWord) values (?, ?)", (initWord.encode(), hashinitWord))
+    elif os.path.exists(pathBD) & os.path.exists(pathKey):
+        pass
+    elif os.path.exists(pathBD):
+        pass
+    elif os.path.exists(pathKey):
+        pass
 
-def verifyBD():
-    print(bd.query(f"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'", returnData=True))
-    return True
+
+def verifyBD(pathBD, pathKey, table):
+    if os.path.exists(pathBD) & os.path.exists(pathKey):
+        print('a')
+        if table[0] in bd.query(pathBD, f"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'", returnData=True):
+            print('b')
+            initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {table[0]};", returnData=True)
+            print('c')
+            if initWordAndHash[0] == bd.desEncryptData(pathKey, initWordAndHash[1]):
+                return 
+            elif initWordAndHash == None:
+                return [False, True]
+        else:
+            return [False, False]
+    else:
+        return False
 
 #funciones utiles
 def browsePath(browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
