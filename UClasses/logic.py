@@ -23,14 +23,13 @@ def initDB(pathBD, pathKey, table, initWord):
 
 def verifyBD(pathBD, pathKey, table):
     if os.path.exists(pathBD) & os.path.exists(pathKey):
-        print('a')
         if table[0] in bd.query(pathBD, f"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'", returnData=True):
-            print('b')
             initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {table[0]};", returnData=True)
-            print('c')
             if initWordAndHash[0] == bd.desEncryptData(pathKey, initWordAndHash[1]):
-                return 
+                return True
             elif initWordAndHash == None:
+                return [True, False]
+            else:
                 return [False, True]
         else:
             return [False, False]
@@ -38,7 +37,7 @@ def verifyBD(pathBD, pathKey, table):
         return False
 
 #funciones utiles
-def browsePath(browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
+def browsePath(browseCarpeta: bool, title: str, mainTypeText: str=..., mainType: str=...):
     """- str(title) = titulo de ventana por ejemplo 'Seleccione un archivo...' [obligatorio]
     - bool(browseCarpeta) = si lo buscado es una carpeta tendria que ingresar True, de lo contrario False [obligatorio]
     - str(mainTypeText) = lo que dice el selector de archivos por ejemplo 'txt files [opcional si browseCarpeta es False]'
@@ -46,7 +45,7 @@ def browsePath(browseCarpeta, title, mainTypeText: str=..., mainType: str=...):
     root = Tk()
     root.withdraw()
     root.attributes('-topmost', True)
-    if browseCarpeta == True:
+    if browseCarpeta:
         path = filed.askdirectory(title = title)
     else:
         path = filed.askopenfilename(title = title, filetypes = ((mainTypeText, mainType),("All files", "*.*")))

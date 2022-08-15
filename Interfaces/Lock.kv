@@ -55,20 +55,36 @@
             MDBoxLayout:
                 orientation: 'vertical'
                 spacing: 20
-                MDTextField:
-                    id: DB path
-                    hint_text: 'Path of DB:'
-                    text: app.pathBD
-                    helper_text: "Double tap: Buscar Base de datos."
-                    on_double_tap: root.Browser(self, True)
-                    helper_text_mode: "on_focus"
-                MDTextField:
-                    id: Key path
-                    hint_text: 'Path of Key of the BD:'
-                    text: app.pathKey
-                    helper_text: "Double tap: Buscar Base de datos."
-                    on_double_tap: root.Browser(self, False)
-                    helper_text_mode: "on_focus"
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 5
+                    MDTextField:
+                        id: DB path
+                        hint_text: 'Path of DB:'
+                        required: True
+                        text: app.pathBD
+                        helper_text: "Double tap: Buscar Base de datos."
+                        on_double_tap: root.Browser(self, True, False)
+                        helper_text_mode: "on_focus"
+                    MDIconButton:
+                        icon: "language-python"
+                        icon_color: app.theme_cls.primary_color
+                        on_release: root.Browser(self, True, True)
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 5
+                    MDTextField:
+                        id: Key path
+                        hint_text: 'Path of Key of the BD:'
+                        required: True
+                        text: app.pathKey
+                        helper_text: "Double tap: Buscar una llave para la Base de datos."
+                        on_double_tap: root.Browser(self, False, False)
+                        helper_text_mode: "on_focus"
+                    MDIconButton:
+                        icon: "language-python"
+                        icon_color: app.theme_cls.primary_color
+                        on_release: root.Browser(self, False, True)
             MDBoxLayout:
                 size_hint: 1, 0.3
                 orientation: 'horizontal'
@@ -84,7 +100,6 @@
                     on_release: root.CreateBD()
                     text_color: app.theme_cls.primary_light if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_dark
                     line_color: app.theme_cls.primary_light if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_dark
-
 
                 
 

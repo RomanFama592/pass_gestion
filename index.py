@@ -8,14 +8,15 @@ from kivy.lang.builder import Builder
 from kivymd.uix.behaviors import RoundedRectangularElevationBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.relativelayout import MDRelativeLayout
 from kivy.clock import Clock
 from kivymd.color_definitions import palette
 from UClasses import logic, bd
 from kivy.properties import StringProperty
+from getpass import getuser
 import os, darkdetect
 
-"""from getpass import getuser
-f'C:/Users/{getuser()}/Documents'"""
+"""f'C:/Users/{getuser()}/Documents'"""
 #self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
 # root.manager.resibleFont(self.height, self.width, 0.5)
 
@@ -23,15 +24,14 @@ pathOrigin = os.getcwd()
 initWord = f'nene que se porta mal'
 formatBD = f'.bdpg'
 formatKey = f'.key'
-pathBD = f'{pathOrigin}\index{formatBD}'
-pathKey = f'{pathOrigin}\GuardalaBien{formatKey}'
+pathBD = f'{pathOrigin}\Database{formatBD}'
+pathKey = f'{pathOrigin}\encryptionKey{formatKey}'
 
 Builder.load_string("""
 #<KvLang>
 #:include Interfaces\Passwords.kv
 #:include Interfaces\Setting.kv
 #:include Interfaces\Lock.kv
-#:include Interfaces\MasterInterfaces.kv
 
 <MainScreenManager>:
     LockInter:
@@ -82,12 +82,12 @@ class AppMain(MDApp):
 class MainScreenManager(ScreenManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.validateThemeUpdate = False
-        Clock.schedule_interval(self.themeUpdate, 60)
+        self.validateThemeUpdate = True
+        Clock.schedule_once(self.themeUpdate)
+        Clock.schedule_interval(self.themeUpdate, 30)
         #print(self._get_screen_names())
 
     def themeUpdate(self, *args):
-        print(args)
         if self.validateThemeUpdate:
             if darkdetect.theme() is not None:
                 Aplicacion.theme_cls.theme_style = darkdetect.theme()
@@ -156,13 +156,19 @@ class LockInter(MDScreen):
         self.menu = DropMenuPers()
         return super().on_kv_post(base_widget)
 
-    def Browser(self, instance, BDorKey: bool):
+    def Browser(self, instance, BDorKey: bool, broserFolders: bool):
         """BDorKey: True is BD and False is Key
             selectOrfind: True is select and find is False"""
-        if BDorKey:
-            instance.text = Aplicacion.pathBD = logic.browsePath('Selecciona la base de datos', False, 'Base de datos PG files', f'*{Aplicacion.formatBD}')
+        if broserFolders:
+            if BDorKey:
+                instance.text = Aplicacion.pathBD = logic.browsePath(True, 'Selecciona la base de datos', 'Base de datos PG files', f'*{Aplicacion.formatBD}')
+            else:
+                instance.text = Aplicacion.pathKey = logic.browsePath(True,'Selecciona la llave de la base de datos', 'Key files', f'*{Aplicacion.formatKey}')
         else:
-            instance.text = Aplicacion.pathKey = logic.browsePath('Selecciona la llave de la base de datos', False, 'Key files', f'*{Aplicacion.formatKey}')
+            if BDorKey:
+                instance.text = Aplicacion.pathBD = os.path.join(logic.browsePath(False, 'Selecciona la base de datos'), f'DBof{getuser()}')
+            else:
+                instance.text = Aplicacion.pathKey = os.path.join(logic.browsePath(False,'Selecciona la llave de la base de datos'), f'Keyof{getuser()}')
 
     def Login(self):
         snackbar = SnackbarPers()
@@ -172,23 +178,49 @@ class LockInter(MDScreen):
         Aplicacion.pathKey = self.ids['Key path'].text
         
         verifyIntegrity = logic.verifyBD(Aplicacion.pathBD, Aplicacion.pathKey, SettingInter.table)
-        print(verifyIntegrity)
         if verifyIntegrity == True:
             Aplicacion.sm.switch_to(Aplicacion.sm.get_screen(PasswordsInter().name))
         elif verifyIntegrity == [False, True]:
             snackbar.text = 'La llave no es correspondiente a la base de datos'
             snackbar.open()        
+        elif verifyIntegrity == [True, False]:
+            snackbar.text = 'La llave esta dañada'
+            snackbar.open()    
         elif verifyIntegrity == [False, False]:
             snackbar.text = 'La base de datos no funciona'
             snackbar.open()
         elif verifyIntegrity == False:
             snackbar.text = 'La base de datos no existe'
             snackbar.open()
+        else:
+            snackbar.text = 'Error desconocido'
+            snackbar.open()
 
     def CreateBD(self):
-        Aplicacion.pathBD = self.ids['DB path'].text
-        Aplicacion.pathKey = self.ids['Key path'].text
-        logic.initDB(Aplicacion.pathBD, Aplicacion.pathKey, SettingInter.table, Aplicacion.initWord)
+        verificationCreateDB = False
+        verificationCreateDBs = False
+
+        if Aplicacion.formatBD in os.path.basename(self.ids['DB path'].text):
+            Aplicacion.pathBD = self.ids['DB path'].text
+            verificationCreateDB = True
+        else:
+            verificationCreateDB = False
+            self.error(self.ids['DB path'])
+
+        if Aplicacion.formatBD in os.path.basename(self.ids['DB path'].text):
+            Aplicacion.pathBD = self.ids['Key path'].text
+            verificationCreateDBs = True
+        else:
+            verificationCreateDBs = False
+            self.error(self.ids['Key path'])
+        
+        if verificationCreateDB & verificationCreateDBs:
+            logic.initDB(Aplicacion.pathBD, Aplicacion.pathKey, SettingInter.table, Aplicacion.initWord)
+        else:
+            print('ta mal')
+
+    def error(self, instance):
+        instance.error == True
 
     def PaletteColorsSelect(self, Dropitem, text_item):
         Dropitem.set_item = text_item
@@ -202,12 +234,6 @@ class LockInter(MDScreen):
         if text_item == 'Automatic For SO':
             Aplicacion.sm.validateThemeUpdate = True
             Aplicacion.theme_cls.theme_style = darkdetect.theme()
-        elif text_item != 'Light' and text_item != 'Dark':
-            snackbar = SnackbarPers()
-            snackbar.bg_color = Aplicacion.theme_cls.primary_dark
-            snackbar.size_hint_x = (Window.width - 20.0) / Window.width
-            snackbar.text = 'Opcion invalida'
-            snackbar.open()
         else:
             Aplicacion.sm.validateThemeUpdate = False
             Aplicacion.theme_cls.theme_style = text_item
