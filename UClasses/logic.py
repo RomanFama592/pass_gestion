@@ -14,11 +14,11 @@ def initDB(pathBD, pathKey, table, initWord):
         if hashinitWord != (None):
             bd.query(pathBD, f"insert into {table[0]} (initWord, hashInitWord) values (?, ?)", (initWord.encode(), hashinitWord))
     elif os.path.exists(pathBD) & os.path.exists(pathKey):
-        pass
+        return '2'
     elif os.path.exists(pathBD):
-        pass
+        return '1.bd'
     elif os.path.exists(pathKey):
-        pass
+        return '1.key'
 
 
 def verifyBD(pathBD, pathKey, table):

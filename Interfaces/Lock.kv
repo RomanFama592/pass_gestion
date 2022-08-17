@@ -1,7 +1,7 @@
 <IconListItem@OneLineIconListItem>
     text: self.text
-    MDLabel:
-        text: self.text
+
+
 
 <LockInter>:
     MDAnchorLayout: 
@@ -9,7 +9,7 @@
         anchor_x: 'center'
         md_bg_color: app.theme_cls.bg_light
         MDBoxLayoutPers:
-            size_hint: 0.95, 0.95
+            size_hint: 0.97, 0.97
             md_bg_color: app.theme_cls.primary_dark if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_light
             radius: [10, 100, 10, 100]
             style: 'filled'
@@ -61,7 +61,6 @@
                     MDTextField:
                         id: DB path
                         hint_text: 'Path of DB:'
-                        required: True
                         text: app.pathBD
                         helper_text: "Double tap: Buscar Base de datos."
                         on_double_tap: root.Browser(self, True, False)
@@ -76,7 +75,6 @@
                     MDTextField:
                         id: Key path
                         hint_text: 'Path of Key of the BD:'
-                        required: True
                         text: app.pathKey
                         helper_text: "Double tap: Buscar una llave para la Base de datos."
                         on_double_tap: root.Browser(self, False, False)

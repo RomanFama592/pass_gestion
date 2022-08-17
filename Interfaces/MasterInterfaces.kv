@@ -1,0 +1,29 @@
+<MasterInterfaces>:
+    MDAnchorLayout:
+        orientation: 'vertical'
+        md_bg_color: app.theme_cls.bg_light
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        ScreenManager:
+            id: sms
+            ErrorInter:
+            PasswordsInter:
+            SettingInter:
+        MDAnchorLayoutPers:
+            anchor_x: 'center'
+            amchor_y: 'center'
+            size_hint:  1, None
+            height: '70dp'
+            md_bg_color: app.theme_cls.primary_dark if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_light
+            radius: [40, 40, 0, 0]
+            style: 'filled'
+            elevation: 10
+            MDBoxLayout:
+                id: dock
+                spacing: 10
+                orientation: 'horizontal'
+                size_hint: None, 1
+                width: self.minimum_width
+
+                
+                
