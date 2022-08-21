@@ -4,5 +4,13 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"docwriter.progress.trackFunctions": true,
+		"docwriter.progress.trackClasses": false,
+		"docwriter.progress.trackTypes": false,
+		"docwriter.language": "English",
+		"docwriter.hotkey.windows": "Ctrl + .",
+		"docwriter.style": "Auto-detect",
+		"docwriter.progress.trackMethods": true
+	}
 }
