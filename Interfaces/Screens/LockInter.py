@@ -1,16 +1,16 @@
 from kivymd.uix.screen import MDScreen
-from kivymd.color_definitions import palette
-from kivy.app import Builder
-
+from kivy.lang import Builder
 from kivy.metrics import  dp, sp
-from kivy.app import App
-from Interfaces.Components import *
-from UClasses import logic
-from kivy.properties import StringProperty, NumericProperty
+from kivymd.color_definitions import palette
+from Interfaces.Components import get_app, DropMenuPers, SnackbarPers
+from Interfaces.Screens.PasswordsInter import PasswordsInter
+from Interfaces.Screens.SettingInter import SettingInter
+from Interfaces.Screens.MasterInterfaces import MasterInterfaces
+from Utils import logic
 from getpass import getuser
+
 import os, darkdetect
 
-#screens
 class LockInter(MDScreen):
     name = 'Lock'
     kv = """
@@ -25,7 +25,7 @@ class LockInter(MDScreen):
             md_bg_color: app.theme_cls.primary_dark if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_light
             radius: [10, 100, 10, 100]
             style: 'filled'
-            elevation: 10
+            #elevation: 10
             MDLabel:
                 text: 'Drop the files in this window.'
                 font_size: '40sp'
@@ -77,6 +77,7 @@ class LockInter(MDScreen):
                         helper_text: "Double tap: Buscar Base de datos."
                         on_double_tap: root.Browser(self, True, False)
                         helper_text_mode: "on_focus"
+                        required: True
                     MDIconButton:
                         icon: "plus"
                         icon_color: app.theme_cls.primary_color
@@ -91,6 +92,7 @@ class LockInter(MDScreen):
                         helper_text: "Double tap: Buscar una llave para la Base de datos."
                         on_double_tap: root.Browser(self, False, False)
                         helper_text_mode: "on_focus"
+                        required: True
                     MDIconButton:
                         icon: "plus"
                         icon_color: app.theme_cls.primary_color
@@ -160,44 +162,63 @@ class LockInter(MDScreen):
         """
         """BDorKey: True is BD and False is Key
             selectOrfind: True is select and find is False"""
+
         if broserFolders:
             if BDorKey:
-                instance.text = get_app().pathBD = os.path.join(logic.browsePath(broserFolders, 'Selecciona la base de datos'), f'DB_of_{getuser()}{get_app().formatBD}')
+                path = os.path.join(logic.browsePath(broserFolders, 'Selecciona la base de datos'), f'DB_of_{getuser()}{get_app().formatBD}')
+                if path == '':
+                    pass
+                else:
+                    instance.text = get_app().pathBD = path
             else:
-                instance.text = get_app().pathKey = os.path.join(logic.browsePath(broserFolders,'Selecciona la llave de la base de datos'), f'Key_of_{getuser()}{get_app().formatKey}')
+                path = os.path.join(logic.browsePath(broserFolders,'Selecciona la llave de la base de datos'), f'Key_of_{getuser()}{get_app().formatKey}')
+                if path == '':
+                    pass
+                else:
+                    instance.text = get_app().pathKey = path
         else:
             if BDorKey:
-                instance.text = get_app().pathBD = logic.browsePath(broserFolders, 'Selecciona la base de datos', 'Base de datos PG files', f'*{get_app().formatBD}')
+                path = logic.browsePath(broserFolders, 'Selecciona la base de datos', 'Base de datos PG files', f'*{get_app().formatBD}')
+                if path == '':
+                    pass
+                else:
+                    instance.text = get_app().pathBD = path
             else:
-                instance.text = get_app().pathKey = logic.browsePath(broserFolders,'Selecciona la llave de la base de datos', 'Key files', f'*{get_app().formatKey}')
+                path = logic.browsePath(broserFolders,'Selecciona la llave de la base de datos', 'Key files', f'*{get_app().formatKey}')
+                if path == '':
+                    pass
+                else:
+                    instance.text = get_app().pathKey = path
 
     def Login(self):
         """
         It verifies the integrity of the database and the key, and if it's correct, it switches to the
         main screen.
         """
-        get_app().pathBD = self.ids['DB path'].text
-        get_app().pathKey = self.ids['Key path'].text
-
-        verifyIntegrity = logic.verifyBD(get_app().pathBD, get_app().pathKey, SettingInter.table)
-        if verifyIntegrity == True:
-            a = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
-            a.children[1].remove_widget(a.children[1].current_screen)
-            a.refresh_tabs()
-            a.switch_tab(PasswordsInter().name)
-            get_app().sm.switch_to(get_app().sm.get_screen(MasterInterfaces.name))
-            get_app().sm.remove_widget(get_app().sm.get_screen(LockInter.name))
-            del a
-        elif verifyIntegrity == [False, True]:
-            SnackbarPers(text='La llave no es correspondiente a la base de datos').open()
-        elif verifyIntegrity == [True, True]:
-            SnackbarPers(text='La llave esta dañada').open()
-        elif verifyIntegrity == [False, False]:
-            SnackbarPers(text='La base de datos no funciona').open()
-        elif verifyIntegrity == False:
-            SnackbarPers(text='La base de datos no existe').open()
+        if self.ids['DB path'].error or self.ids['Key path'].error == True:
+            SnackbarPers(text='Los campos de base de datos o de la llave no pueden estar vacios').open()
         else:
-            SnackbarPers(text='Error desconocido').open()
+            get_app().pathBD = self.ids['DB path'].text
+            get_app().pathKey = self.ids['Key path'].text
+
+            verifyIntegrity = logic.verifyBD(get_app().pathBD, get_app().pathKey, SettingInter.table)
+            if verifyIntegrity == True:
+                sms = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
+                sms.children[1].remove_widget(sms.children[1].current_screen)
+                sms.refresh_tabs()
+                sms.switch_tab(PasswordsInter().name)
+                get_app().sm.switch_to(get_app().sm.get_screen(MasterInterfaces.name))
+                get_app().sm.remove_widget(get_app().sm.get_screen(LockInter.name))
+            elif verifyIntegrity == [False, True]:
+                SnackbarPers(text='La llave no es correspondiente a la base de datos').open()
+            elif verifyIntegrity == [True, True]:
+                SnackbarPers(text='La llave esta dañada').open()
+            elif verifyIntegrity == [False, False]:
+                SnackbarPers(text='La base de datos no funciona').open()
+            elif verifyIntegrity == False:
+                SnackbarPers(text='La base de datos o la llave no existe').open()
+            else:
+                SnackbarPers(text='Error desconocido').open()
 
     def CreateBD(self):
         """
@@ -207,35 +228,24 @@ class LockInter(MDScreen):
         verificationCreateDBs = False
 
         if get_app().formatBD in os.path.basename(self.ids['DB path'].text):
+            get_app().formatBD
             get_app().pathBD = self.ids['DB path'].text
             verificationCreateDB = True
-        else:
-            verificationCreateDB = False
-            self.error(self.ids['DB path'])
 
         if get_app().formatKey in os.path.basename(self.ids['Key path'].text):
             get_app().pathKey = self.ids['Key path'].text
             verificationCreateDBs = True
-        else:
-            verificationCreateDBs = False
-            self.error(self.ids['Key path'])
         
         if verificationCreateDB & verificationCreateDBs:
             verification = logic.initDB(get_app().pathBD, get_app().pathKey, SettingInter.table, get_app().initWord)
             if verification == None:
-                pass
+                SnackbarPers(text='Se crearon los archivos satisfactoriamente').open()
             elif verification == '2':
-                SnackbarPers(text='ya existen los dos archivos en la ruta indicada').open()
-        else:
-            print('ta mal')
-
-    def error(self, instance):
-        """
-        It sets the error attribute of the instance to True.
-        
-        :param instance: The instance of the model that is being validated
-        """
-        instance.error = True
+                SnackbarPers(text='Ya existen los archivos en la ruta indicada').open()
+            elif verification == '1.bd':
+                SnackbarPers(text='Ya existe una base de datos en la ruta indicada').open()
+            elif verification == '1.key':
+                SnackbarPers(text='Ya existe una llave de base de datos en la ruta indicada').open()
 
     def PaletteColorsSelect(self, Dropitem, text_item):
         """
@@ -265,67 +275,3 @@ class LockInter(MDScreen):
             get_app().theme_cls.theme_style = text_item
             Dropitem.text = f'Select a theme: {text_item}'
         self.menu.dismiss()
-
-class MasterInterfaces(MDScreen):
-    name = 'MI'
-    def __init__(self, **kw):
-        Builder.load_string("""
-#<KvLang>
-<MasterInterfaces>:
-    #añadir relative layout para el boton de +
-    MDBottomNavigation:
-        id: sms
-        ErrorInter:
-        PasswordsInter:
-        SettingInter:
-#</KvLang>
-        """)
-        super().__init__(**kw)
-
-class ErrorInter(MDBottomNavigationItemPers):
-    name = 'Error'
-    kv = """
-#<KvLang>
-MDLabel:
-    text: 'No se porque estas viendo esto ni que paso, pero dejame decirte que o sos suertudo o una locura informatica'
-    halign: 'center'
-#</KvLang>
-        """
-    loadShowdata = False
-    initTable = False
-
-class SettingInter(MDBottomNavigationItemPers):
-    name = 'Settings'
-    icon = 'minus'
-    table = ('userconfigs',"""(
-                                id integer not null primary key autoincrement,
-                                initWord blob not null,
-                                hashInitWord blob not null
-                                )""")
-    kv = """
-#<KvLang>
-<SettingInter>:
-    MDBoxLayout:
-#</KvLang>
-    """
-
-class PasswordsInter(MDBottomNavigationItemPers):
-    name = 'Passwords'
-    icon = 'plus'
-    table = ('accounts', """(
-                            id integer not null primary key autoincrement,
-                            namepages blob not null,
-                            urls blob not null,
-                            users blob,
-                            passwords blob
-                            )""")
-    kv = """
-#<KvLang>
-<PasswordsInter>:
-    MDBoxLayout:
-        orientation: 'vertical'
-        MDRelativeLayout:
-            size_hint: 1, 0.2
-#</KvLang>
-    """
-

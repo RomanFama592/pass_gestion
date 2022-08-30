@@ -2,3 +2,5 @@ __pycache__
 pruebas.py
 GuardarContrasenas.code-workspace
 ConfigsInternal
+setting.json
+.vscode

@@ -1,34 +1,57 @@
 from kivymd.app import MDApp
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager
+from kivymd.uix.screenmanager import MDScreenManager
 from kivy.lang.builder import Builder
 from kivy.clock import Clock
 from kivy.properties import StringProperty
 
-from Interfaces.Components import *
-from Interfaces.Screens import *
+from Interfaces.Components import SnackbarPers, get_app
+from Interfaces.Screens import LockInter, MasterInterfaces
 
-import os, darkdetect
+import os, darkdetect, json, Utils.logic as logic
 
 """f'C:/Users/{getuser()}/Documents'"""
 #self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
 # root.manager.resibleFont(self.height, self.width, 0.5)
 
-if not os.path.exists('indexddsfsdfsdf.py'):
-    pathOrigin = os.getcwd()
-    initWord = f'nene que se porta mal'
-    formatBD = f'.bdpg'
-    formatKey = f'.key'
+def createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema):
+    settingJson = json.dumps({'pathBD': pathBD,
+                                'pathKey': pathKey,
+                                'initWord': initWord,
+                                'paleta': paleta,
+                                'tema': tema},
+                                ensure_ascii=True,
+                                indent=1)
+    with open(pathSetting, 'w') as settingFile:
+        settingFile.write(settingJson)
+
+#create variable initialization
+pathOrigin = os.getcwd()
+formatBD = f'.bdpg'
+formatKey = f'.key'
+pathSetting = os.path.join(pathOrigin, 'setting.json')
+
+if os.path.exists(pathSetting):
+    with open(pathSetting, 'r') as settingFile:
+        settingJson = json.load(settingFile)
+    initWord = settingJson.get('initWord', 'nene que se porta mal')
+    pathBD = settingJson.get('pathBD', f'{pathOrigin}\Database{formatBD}')
+    pathKey = settingJson.get('pathKey', f'{pathOrigin}\encryptionKey{formatKey}')
+    paleta = settingJson.get('paleta', 'Cyan')
+    tema = settingJson.get('tema', '')
+else:
+    initWord = 'nene que se porta mal'
     pathBD = f'{pathOrigin}\Database{formatBD}'
     pathKey = f'{pathOrigin}\encryptionKey{formatKey}'
     paleta = 'Cyan'
     tema = ''
-else:
-    pass
+    createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema)
 
 #Aplicacion
 class AppMain(MDApp):
+    #variable initialization
     pathOrigin = StringProperty(pathOrigin)
+    pathSetting = StringProperty(pathSetting)
     initWord = StringProperty(initWord)
     formatBD = StringProperty(formatBD)
     formatKey = StringProperty(formatKey)
@@ -36,32 +59,26 @@ class AppMain(MDApp):
     pathKey = StringProperty(pathKey)
     paleta = StringProperty(paleta)
     tema = StringProperty(tema)
-    title = 'PassGestion'
-    version = StringProperty('alpha')
-    
-    def build(self):
-        #Window.size = (1200, 700)
-        #SnackbarPers() = SnackbarPers()
-        #Clock.schedule_interval(self.updatePaletteSnackbar, 1)
-        Window.bind(on_dropfile=self.on_filedrop)
 
+    title = 'PassGestion'
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.theme_cls.material_style = 'M3'
         self.theme_cls.primary_palette = self.paleta
-        self.sm = MainScreenManager()
 
+    
+    def build(self):
+        Window.bind(on_drop_file=self._on_drop_file)
+        self.sm = MainScreenManager()
         if tema == '':
             self.sm.validateThemeUpdate = True
         else:
             self.sm.validateThemeUpdate = False
             self.theme_cls.theme_style = tema
-        
         return self.sm
 
-    def updatePaletteSnackbar(self, *args):
-        if SnackbarPers().bg_color != Aplicacion.theme_cls.primary_light if Aplicacion.theme_cls.theme_style == 'Dark' else Aplicacion.theme_cls.primary_dark:
-            SnackbarPers().bg_color = Aplicacion.theme_cls.primary_light if Aplicacion.theme_cls.theme_style == 'Dark' else Aplicacion.theme_cls.primary_dark
-
-    def on_filedrop(self, window, pathname: bytes):
+    def _on_drop_file(self, window, pathname: bytes, x, y):
         """
         If the file dropped is a database, then the path of the database is saved in the variable
         self.pathBD, and the text of the textinput is changed to the path of the database.
@@ -76,34 +93,42 @@ class AppMain(MDApp):
         """
         pathname = pathname.decode()
 
-        if self.formatBD.replace('.', '') == pathname.split(".")[-1]:
-            self.pathBD = self.sm.current_screen.ids['DB path'].text = pathname
-            SnackbarPers(text = f'Tiraste una base de datos: {os.path.basename(pathname)}').open()
-        elif self.formatKey.replace('.', '') == pathname.split(".")[-1]:
-            self.pathKey = self.sm.current_screen.ids['Key path'].text = pathname
-            SnackbarPers(text=f'Tiraste una llave: {os.path.basename(pathname)}').open()
-        else:
-            SnackbarPers(text=f'El archivo {os.path.basename(pathname)} no se reconoce como un archivo valido.').open()
+        if self.sm.current == LockInter.LockInter.name:
+            if self.formatBD.replace('.', '') == pathname.split(".")[-1]:
+                self.pathBD = self.sm.current_screen.ids['DB path'].text = pathname
+                SnackbarPers(text = f'Tiraste una base de datos: {os.path.basename(pathname)}').open()
+            elif self.formatKey.replace('.', '') == pathname.split(".")[-1]:
+                self.pathKey = self.sm.current_screen.ids['Key path'].text = pathname
+                SnackbarPers(text=f'Tiraste una llave: {os.path.basename(pathname)}').open()
+            else:
+                SnackbarPers(text=f'El archivo {os.path.basename(pathname)} no se reconoce como un archivo valido.').open()
 
     def on_stop(self):
-        print('y se acabo')
+        self.writeJSON()
         return super().on_stop()
 
+    def writeJSON(self):
+        if self.sm.validateThemeUpdate:
+            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, '')
+        else:
+            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, self.theme_cls.theme_style)
+
 #screenmanager
-class MainScreenManager(ScreenManager):
-    def __init__(self, **kwargs):
-        Builder.load_string("""
+class MainScreenManager(MDScreenManager):
+    kv = """
 #<KvLang>
 <MainScreenManager>:
     LockInter:
     MasterInterfaces:
 #</KvLang>
-""")
+"""
+    
+    def __init__(self, **kwargs):
+        Builder.load_string(self.kv)
         self.validateThemeUpdate = True
         Clock.schedule_once(self.themeUpdate)
         Clock.schedule_interval(self.themeUpdate, 30)
         super().__init__(**kwargs)
-        #print(self._get_screen_names())
 
     def themeUpdate(self, *args):
         """
@@ -111,7 +136,7 @@ class MainScreenManager(ScreenManager):
         """
         if self.validateThemeUpdate:
             if darkdetect.theme() is not None:
-                Aplicacion.theme_cls.theme_style = darkdetect.theme()
+                get_app().theme_cls.theme_style = darkdetect.theme()
 
     def resibleFont(self, x, y, font):
         """
@@ -132,5 +157,4 @@ class MainScreenManager(ScreenManager):
         else: 
             return y * font
 
-Aplicacion = AppMain()
-Aplicacion.run()
+AppMain().run()
