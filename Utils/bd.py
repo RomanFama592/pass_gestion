@@ -1,7 +1,8 @@
 import os
 from re import A
 import sqlite3 as sql
-from cryptography.fernet import Fernet
+#from cryptography.fernet import fernet.Fernet
+import cryptography.fernet as fernet
 import base64 as b64
 from hashlib import sha256
 
@@ -44,8 +45,34 @@ def query(pathBD: str, command: str, parameters: tuple = (),
           returnData: bool = False, sizeReturn: str or int = '' or 0,
           executeMany: bool = False, createDB: bool = False,
           returnNameofColumns: bool = False, dictwithrowaskey: bool = False):
+    """
+    It's a function that allows you to execute a query in a database, and return the data if you want
+    
+    :param pathBD: str, command: str, parameters: tuple = (),
+    :type pathBD: str
+    :param command: str
+    :type command: str
+    :param parameters: tuple = (),
+    :type parameters: tuple
+    :param returnData: bool = False, sizeReturn: str or int = '' or 0,, defaults to False
+    :type returnData: bool (optional)
+    :param sizeReturn: str or int = '' or 0,
+    :type sizeReturn: str or int
+    :param executeMany: if you want to execute many commands at once, you must pass the commands in a
+    list of tuples, and the parameters in a list of tuples, and set this parameter to True, defaults to
+    False
+    :type executeMany: bool (optional)
+    :param createDB: if you want to create the database if it doesn't exist, defaults to False
+    :type createDB: bool (optional)
+    :param returnNameofColumns: bool = False, dictwithrowaskey: bool = False, defaults to False
+    :type returnNameofColumns: bool (optional)
+    :param dictwithrowaskey: bool = False, defaults to False
+    :type dictwithrowaskey: bool (optional)
+    :return: a tuple with the data and the names of the columns, False if not execute good the query or None if not exist the data base.
+    """
 
     verifyPath = os.path.exists(pathBD)
+    
     if createDB:
         verifyPath = True
 
@@ -93,7 +120,7 @@ def query(pathBD: str, command: str, parameters: tuple = (),
 
         conexion.close()
     else:
-        return False
+        return None
 
 #encriptado
 def generateKey(pathKey: str, mensaje: str = ""):
@@ -113,11 +140,14 @@ def generateKey(pathKey: str, mensaje: str = ""):
     :param mensaje: The message you want to encrypt
     :type mensaje: str
     """
-    with open(pathKey, 'wb') as key:
-        if mensaje == "":
-            key.write(Fernet.generate_key())
-        else:
-            key.write(b64.urlsafe_b64encode(createPassword(mensaje)))
+    try:
+        with open(pathKey, 'wb') as key:
+            if mensaje == "":
+                key.write(fernet.Fernet.generate_key())
+            else:
+                key.write(b64.urlsafe_b64encode(createPassword(mensaje)))
+    except:
+        return False
 
 def encryptData(pathKey: str, data: str):
     """
@@ -129,14 +159,18 @@ def encryptData(pathKey: str, data: str):
     :param data: bytes
     :type data: bytes
     
-    :return: The encrypted data or None in case of error.
+    :return: The encrypted data, None in case of error or False in case of not exist key file.
     """
     try:
         with open(pathKey, 'rb') as keyfile:
-            f = Fernet(keyfile.read())
-        return f.encrypt(data.encode())
+            f = fernet.Fernet(keyfile.read())
+        return f.encrypt(str(data).encode())
     except ValueError:
         return None
+    except fernet.InvalidToken:
+        return None
+    except FileNotFoundError:
+        return False
 
 def desEncryptData(pathKey: str, data: bytes):
     """
@@ -148,14 +182,18 @@ def desEncryptData(pathKey: str, data: bytes):
     :param data: The data to be encrypted
     :type data: bytes
     
-    :return: The decrypted data or None in case of error.
+    :return: The encrypted data, None in case of error or False in case of not exist key file.
     """
     try:
         with open(pathKey, 'rb') as keyfile:
-            f = Fernet(keyfile.read())
-            return f.decrypt(data).decode()
+            f = fernet.Fernet(keyfile.read())
+        return f.decrypt(data).decode()
     except ValueError:
-        return data
+        return None
+    except fernet.InvalidToken:
+        return None
+    except FileNotFoundError:
+        return False
 
 #password
 def createPassword(password: str):

@@ -7,34 +7,27 @@ else: import bd
 
 
 def initDB(pathBD: str, pathKey: str, table, initWord: str):
-    """
-    If the database and key don't exist, create them, encrypt the initWord, and insert it into the
-    database
-    
-    :param pathBD: str - path to the database
-    :type pathBD: str
-    :param pathKey: str - path to the key file
-    :type pathKey: str
-    :param table: a tuple with the name of the table and the name of the column that will be used to
-    store the encrypted data
-    :param initWord: str - the word that will be used to generate the hash
-    :type initWord: str
-    :return: a string.
-    """
-    if not os.path.exists(pathBD) & os.path.exists(pathKey):
-        createTable(pathBD, table)
-        bd.generateKey(pathKey)
+    if (not os.path.exists(pathBD)) & (not os.path.exists(pathKey)):
+        if createTable(pathBD, table) == '1.bd':
+            return '2.bd' # error al crear la base de datos
+        if bd.generateKey(pathKey) == False:
+            return '2.key' # error al crear la clave
         hashinitWord = bd.encryptData(pathKey, initWord)
-        if hashinitWord != (None):
-            bd.query(pathBD, f"insert into {table[0]} (initWord, hashInitWord) values (?, ?);", (initWord.encode(), hashinitWord))
+        if hashinitWord == None:
+            return '3.key' # error al encriptar
+        elif hashinitWord == False:
+            return '4.key' # error no existe la llave
+        else:
+            if bd.query(pathBD, f"insert into {table[0]} (initWord, hashInitWord) values (?, ?);", (initWord.encode(), hashinitWord)) == False:
+                return '3.bd'
     elif os.path.exists(pathBD) & os.path.exists(pathKey):
-        return '2'
+        return '1'
     elif os.path.exists(pathBD):
         return '1.bd'
     elif os.path.exists(pathKey):
         return '1.key'
 
-def verifyBD(pathBD, pathKey, table):
+def verifyBD(pathBD, pathKey, tableName):
     """
     It checks if the database exists, if the key exists, if the table exists, and if the table has the
     correct password
@@ -46,31 +39,34 @@ def verifyBD(pathBD, pathKey, table):
     boolean value.
     """
     if os.path.exists(pathBD) & os.path.exists(pathKey):
-        if table[0] in bd.query(pathBD, "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';", returnData=True, sizeReturn='all', dictwithrowaskey=True)['name']:
-            initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {table[0]};", returnData=True, sizeReturn='one', dictwithrowaskey=True)
-            if initWordAndHash['initWord'].decode() == bd.desEncryptData(pathKey, initWordAndHash['hashInitWord']):
-                return True
-            elif initWordAndHash == None:
-                return [True, False]
+        verifyTable = bd.query(pathBD, "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';", returnData=True, sizeReturn='all', dictwithrowaskey=True)['name']
+        if tableName in verifyTable:
+            initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {tableName};", returnData=True, sizeReturn='one', dictwithrowaskey=True)
+            if initWordAndHash == False:
+                return '2.bd' #la base de datos esta dañada
+            elif initWordAndHash == {}:
+                return '2.bd'
+            
+            desEncryptReturn = bd.desEncryptData(pathKey, initWordAndHash['hashInitWord'])
+            if desEncryptReturn == None:
+                return '2.key' #la key no es valida
+            
+            if desEncryptReturn.encode() == initWordAndHash['initWord']:
+                pass
             else:
-                return [True, True]
+                return '2.key'
         else:
-            return [False, False]
-    else:
-        return False
-
-def extractData(pathBD, pathKey, tableName, quantityRows):
-    """
-    It takes a database path, a key path, a table name, and a quantity of rows to return, and returns a
-    tuple of the data and the column names
+            return '2.bd'
+    elif (not os.path.exists(pathBD)) & (not os.path.exists(pathKey)):
+        return '1'
+    elif not os.path.exists(pathBD):
+        return '1.bd'
+    elif not os.path.exists(pathKey):
+        return '1.key'
     
-    :param pathBD: The path to the database
-    :param pathKey: The path to the key file
-    :param tableName: The name of the table you want to extract data from
-    :param quantityRows: The number of rows to be returned
-    :return: A tuple containing a list of lists and a list of strings.
-    """
+def extractData(pathBD, pathKey, tableName, quantityRows):
     data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id desc', returnData=True, sizeReturn=quantityRows, returnNameofColumns=True)
+    #WIP
     if data != False:
         dataNew = []
         for rows in data[0]:
@@ -78,11 +74,15 @@ def extractData(pathBD, pathKey, tableName, quantityRows):
                 dataNew2 = []
                 for columnValue in rows:
                     if isinstance(columnValue, bytes): 
-                        dataNew2.append(bd.desEncryptData(pathKey, columnValue))
+                        dataNew2.append(bd.desEncryptData(pathKey, columnValue)) #puede error
                     else:
                         dataNew2.append(columnValue)
                 dataNew.append(dataNew2)
         return (dataNew, data[1])
+    elif data == False:
+        return '1.query'
+    elif data == None:
+        return '1.bd'
 
 def insertData(pathBD, pathKey, tableName, rowId, column, data):
     """
@@ -121,7 +121,9 @@ def createTable(pathBD: str, table):
     :param table: a list of two elements, the first is the name of the table, the second is the
     structure of the table
     """
-    bd.query(pathBD, f"CREATE TABLE IF NOT EXISTS {table[0]} {table[1]};", createDB=True)
+    error = bd.query(pathBD, f"CREATE TABLE IF NOT EXISTS {table[0]} {table[1]};", createDB=True)
+    if error == False:
+        return '1.bd'
 
 def countRowsInTable(pathBD: str, tableName):
     """
@@ -133,11 +135,23 @@ def countRowsInTable(pathBD: str, tableName):
     :return: The number of rows in the table.
     """
     countRows = bd.query(pathBD, f"SELECT COUNT(id) from {tableName}", returnData=True, dictwithrowaskey=True,sizeReturn='one')
-    print(countRows.get('COUNT(id)'))
     return countRows.get('COUNT(id)')
 
 
 #funciones utiles
+def verifyCodeError(result, dictWithErrors: dict, snackbar):
+    if result == None:
+        try:
+            snackbar(text=dictWithErrors['None']).open()
+        except:
+            pass
+    else:
+        try:
+            snackbar(text=dictWithErrors[result]).open()
+        except:
+            snackbar(text='error desconocido, consulte el LOG').open()
+
+
 def browsePath(browseFolder: bool, title: str, mainTypeText: str=..., mainType: str=...):
     """
     It opens a window that allows you to select a file or folder and returns the path of the selected

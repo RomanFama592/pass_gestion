@@ -16,6 +16,8 @@ class SettingInter(MDBottomNavigationItemPers):
 #</KvLang>
     """
     loadShowdata = False
+    initTable = False
+    saveNameInJSON = False
 
     def on_tab_press(self, *args) -> None:
         get_app().sm.get_screen("MI").children[0].disabled = True

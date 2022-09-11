@@ -14,3 +14,4 @@ class ErrorInter(MDBottomNavigationItemPers):
         """
     loadShowdata = False
     initTable = False
+    saveNameInJSON = False

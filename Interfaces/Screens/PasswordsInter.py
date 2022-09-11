@@ -1,4 +1,4 @@
-from Interfaces.Components import MDBottomNavigationItemPers
+from Interfaces.Components import MDBottomNavigationItemPers, MDBoxLayoutPers
 from Interfaces.Components import get_app
 
 class PasswordsInter(MDBottomNavigationItemPers):

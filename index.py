@@ -8,18 +8,19 @@ from kivy.properties import StringProperty
 from Interfaces.Components import SnackbarPers, get_app
 from Interfaces.Screens import LockInter, MasterInterfaces
 
-import os, darkdetect, json, Utils.logic as logic
+import os, darkdetect, json, ctypes, Utils.logic as logic
 
 """f'C:/Users/{getuser()}/Documents'"""
 #self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
 # root.manager.resibleFont(self.height, self.width, 0.5)
 
-def createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema):
+def createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema, primaryScreen):
     settingJson = json.dumps({'pathBD': pathBD,
                                 'pathKey': pathKey,
                                 'initWord': initWord,
                                 'paleta': paleta,
-                                'tema': tema},
+                                'tema': tema,
+                                'primaryScreen': primaryScreen},
                                 ensure_ascii=True,
                                 indent=1)
     with open(pathSetting, 'w') as settingFile:
@@ -39,13 +40,16 @@ if os.path.exists(pathSetting):
     pathKey = settingJson.get('pathKey', f'{pathOrigin}\encryptionKey{formatKey}')
     paleta = settingJson.get('paleta', 'Cyan')
     tema = settingJson.get('tema', '')
+    primaryScreen = settingJson.get('primaryScreen', MasterInterfaces.PasswordsInter.PasswordsInter.name)
 else:
     initWord = 'nene que se porta mal'
     pathBD = f'{pathOrigin}\Database{formatBD}'
     pathKey = f'{pathOrigin}\encryptionKey{formatKey}'
     paleta = 'Cyan'
     tema = ''
-    createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema)
+    primaryScreen = MasterInterfaces.PasswordsInter.PasswordsInter.name
+    createJSON(pathSetting, pathBD,
+    pathKey, initWord, paleta, tema, primaryScreen)
 
 #Aplicacion
 class AppMain(MDApp):
@@ -59,6 +63,8 @@ class AppMain(MDApp):
     pathKey = StringProperty(pathKey)
     paleta = StringProperty(paleta)
     tema = StringProperty(tema)
+    primaryScreen = StringProperty(primaryScreen)
+    #hacer verificacion de que estas variables son correctas
 
     title = 'PassGestion'
     
@@ -66,10 +72,13 @@ class AppMain(MDApp):
         super().__init__(**kwargs)
         self.theme_cls.material_style = 'M3'
         self.theme_cls.primary_palette = self.paleta
+        self.is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        #Window.size = (1000, 800)
+        Window.minimum_width, Window.minimum_height = (640, 480)
 
     
     def build(self):
-        Window.bind(on_drop_file=self._on_drop_file)
+        Window.bind(on_drop_file = self.dragAndDrop)
         self.sm = MainScreenManager()
         if tema == '':
             self.sm.validateThemeUpdate = True
@@ -78,7 +87,7 @@ class AppMain(MDApp):
             self.theme_cls.theme_style = tema
         return self.sm
 
-    def _on_drop_file(self, window, pathname: bytes, x, y):
+    def dragAndDrop(self, window, pathname: bytes, *pos):
         """
         If the file dropped is a database, then the path of the database is saved in the variable
         self.pathBD, and the text of the textinput is changed to the path of the database.
@@ -91,6 +100,7 @@ class AppMain(MDApp):
         :param pathname: The path to the file that was dropped
         :type pathname: bytes
         """
+        
         pathname = pathname.decode()
 
         if self.sm.current == LockInter.LockInter.name:
@@ -109,9 +119,9 @@ class AppMain(MDApp):
 
     def writeJSON(self):
         if self.sm.validateThemeUpdate:
-            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, '')
+            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, '', self.primaryScreen)
         else:
-            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, self.theme_cls.theme_style)
+            createJSON(self.pathSetting, self.pathBD, self.pathKey, self.initWord, self.theme_cls.primary_palette, self.theme_cls.theme_style, self.primaryScreen)
 
 #screenmanager
 class MainScreenManager(MDScreenManager):

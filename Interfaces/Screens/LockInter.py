@@ -25,10 +25,10 @@ class LockInter(MDScreen):
             md_bg_color: app.theme_cls.primary_dark if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_light
             radius: [10, 100, 10, 100]
             style: 'filled'
-            #elevation: 10
+            #elevation: 10 desactivado por mal rendimiento
             MDLabel:
-                text: 'Drop the files in this window.'
-                font_size: '40sp'
+                text: 'Drop the files in this window.' if not app.is_admin else 'Drop files is disabled for opening the application as admin'
+                font_size: '40sp' if not app.is_admin else '35sp'
                 halign: "center"
                 pos_hint: {"center_y": 0.7}
                 opacity: 0.2
@@ -52,10 +52,11 @@ class LockInter(MDScreen):
             id: Theme
             text: 'Select a theme: Automatic For SO' if app.tema == '' else ('Select a theme: ' + app.theme_cls.theme_style)
             text_color: app.theme_cls.primary_light if app.theme_cls.theme_style == 'Dark' else app.theme_cls.primary_dark
+            font_size: '13sp'
             on_release:
                 root.menu.caller = self
                 root.menu.items = root.listThemes
-                root.menu.width_mult = 4.5
+                root.menu.width_mult = 3.5
                 root.menu.open()
     MDRelativeLayout:
         size: root.width, root.height
@@ -201,24 +202,20 @@ class LockInter(MDScreen):
             get_app().pathBD = self.ids['DB path'].text
             get_app().pathKey = self.ids['Key path'].text
 
-            verifyIntegrity = logic.verifyBD(get_app().pathBD, get_app().pathKey, SettingInter.table)
-            if verifyIntegrity == True:
+            verifyIntegrity = logic.verifyBD(get_app().pathBD, get_app().pathKey, SettingInter.table[0])
+            logic.verifyCodeError(verifyIntegrity, {
+                '1': 'las rutas especificadas no existen',
+                '1.bd': 'no existe la base de datos indicada',
+                '2.bd': 'la base de datos no es funcional',
+                '1.key': 'no existe la llave de base de datos indicada',
+                '2.key': 'la llave no es valida'}, SnackbarPers)
+            if verifyIntegrity == None:
                 sms = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
                 sms.children[1].remove_widget(sms.children[1].current_screen)
                 sms.refresh_tabs()
-                sms.switch_tab(PasswordsInter().name)
+                sms.switch_tab(get_app().primaryScreen)
                 get_app().sm.switch_to(get_app().sm.get_screen(MasterInterfaces.name))
                 get_app().sm.remove_widget(get_app().sm.get_screen(LockInter.name))
-            elif verifyIntegrity == [False, True]:
-                SnackbarPers(text='La llave no es correspondiente a la base de datos').open()
-            elif verifyIntegrity == [True, True]:
-                SnackbarPers(text='La llave esta dañada').open()
-            elif verifyIntegrity == [False, False]:
-                SnackbarPers(text='La base de datos no funciona').open()
-            elif verifyIntegrity == False:
-                SnackbarPers(text='La base de datos o la llave no existe').open()
-            else:
-                SnackbarPers(text='Error desconocido').open()
 
     def CreateBD(self):
         """
@@ -228,25 +225,34 @@ class LockInter(MDScreen):
         verificationCreateDBs = False
 
         if get_app().formatBD in os.path.basename(self.ids['DB path'].text):
-            get_app().formatBD
             get_app().pathBD = self.ids['DB path'].text
             verificationCreateDB = True
+        else:
+            self.ids['DB path'].error = True
 
         if get_app().formatKey in os.path.basename(self.ids['Key path'].text):
             get_app().pathKey = self.ids['Key path'].text
             verificationCreateDBs = True
+        else:
+            self.ids['Key path'].error = True
         
         if verificationCreateDB & verificationCreateDBs:
             verification = logic.initDB(get_app().pathBD, get_app().pathKey, SettingInter.table, get_app().initWord)
-            if verification == None:
-                SnackbarPers(text='Se crearon los archivos satisfactoriamente').open()
-            elif verification == '2':
-                SnackbarPers(text='Ya existen los archivos en la ruta indicada').open()
-            elif verification == '1.bd':
-                SnackbarPers(text='Ya existe una base de datos en la ruta indicada').open()
-            elif verification == '1.key':
-                SnackbarPers(text='Ya existe una llave de base de datos en la ruta indicada').open()
-
+            logic.verifyCodeError(verification, {
+                'None': 'se ha creado la base de datos correctamente',
+                '1': 'existe la base de datos y la llave en las rutas indicadas',
+                '1.bd': 'existe la base de datos indicada',
+                '2.bd': 'no se pudo crear la base de datos',
+                '1.key': 'existe la llave de base de datos indicada',
+                '2.key': 'no se pudo crear la llave',
+                '3.key': 'error al encryptar el init word',
+                '4.key': 'la ruta indica tuvo un fallo'}, SnackbarPers)
+            if verification in ['4.key', '3.key', '2.key']:
+                os.remove(get_app().pathBD)
+            if verification == '3.bd':
+                os.remove(get_app().pathBD)
+                os.remove(get_app().pathKey)
+            
     def PaletteColorsSelect(self, Dropitem, text_item):
         """
         It sets the primary palette of the theme to the text_item that was selected in the dropdown menu
