@@ -151,7 +151,6 @@ def verifyCodeError(result, dictWithErrors: dict, snackbar):
         except:
             snackbar(text='error desconocido, consulte el LOG').open()
 
-
 def browsePath(browseFolder: bool, title: str, mainTypeText: str=..., mainType: str=...):
     """
     It opens a window that allows you to select a file or folder and returns the path of the selected

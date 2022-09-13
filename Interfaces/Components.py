@@ -109,14 +109,8 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
         return super().on_enter(*args)
 
     def loadTheShowData(self): #WIP reference
-        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.table[0], 5)
-        if not rows == None: 
-            self.showdata = Showdata(data=rows, tableName = self.table[0], hiddenInputs=self.hiddenInputs)
-            self.children[0].add_widget(self.showdata)
-        elif rows == '1.bd':
-            pass
-        elif rows == '1.query':
-            pass
+        self.showdata = Showdata(tableName = self.table[0], hiddenInputs=self.hiddenInputs)
+        self.children[0].add_widget(self.showdata)
 
 
 
@@ -185,20 +179,19 @@ class Showdata(MDScrollView):
     size_hint = (0.9, 1)
     pos_hint = {'center_x': 0.5, 'center_y': 0.5}
     spacing = 10
-    data = ListProperty()
     tableName = StringProperty()
     hiddenInputs = ListProperty()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.data = self.loadData()
         self.stacklayout = MDStackLayout(orientation='bt-lr',
-                                        size_hint_y=None) #cada que se añada un item recalcular el height
-        #self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
+                                        size_hint_y=None)        
         self.add_widget(self.stacklayout)
         self.paintingRows()
 
-#hacer que al subir la barra al tope se active el reload() del parent 
-    def paintingRows(self):
+    def paintingRows(self): #revisar qque no vulve a hacer la query y no actualiza la self.data
+        self.data = self.loadData() # problema line
         for datos in reversed(self.data[0]):
             self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
@@ -207,5 +200,16 @@ class Showdata(MDScrollView):
         logic.createEmptyRow(get_app().pathBD, self.tableName, self.data[1])
         self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(logic.countRowsInTable(get_app().pathBD, self.tableName)), idex=self.data[1], datos=['' if datos != 'id' else logic.countRowsInTable(get_app().pathBD, self.tableName) for datos in self.data[1]], withHideIcon=self.hiddenInputs, initPassword=False))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
+
+    def reloadRows(self): #revisar
+        self.data = self.loadData()
+        self.stacklayout.clear_widgets()
+        self.paintingRows()
+
+    def loadData(self):
+        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, 5)
+        logic.verifyCodeError(rows,
+        {'1.key': '',
+        '1.bd': ''}, SnackbarPers)
 
 
