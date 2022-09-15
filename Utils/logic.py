@@ -135,22 +135,10 @@ def countRowsInTable(pathBD: str, tableName):
     :return: The number of rows in the table.
     """
     countRows = bd.query(pathBD, f"SELECT COUNT(id) from {tableName}", returnData=True, dictwithrowaskey=True,sizeReturn='one')
-    return countRows.get('COUNT(id)')
+    return countRows['COUNT(id)']
 
 
 #funciones utiles
-def verifyCodeError(result, dictWithErrors: dict, snackbar):
-    if result == None:
-        try:
-            snackbar(text=dictWithErrors['None']).open()
-        except:
-            pass
-    else:
-        try:
-            snackbar(text=dictWithErrors[result]).open()
-        except:
-            snackbar(text='error desconocido, consulte el LOG').open()
-
 def browsePath(browseFolder: bool, title: str, mainTypeText: str=..., mainType: str=...):
     """
     It opens a window that allows you to select a file or folder and returns the path of the selected

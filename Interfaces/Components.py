@@ -165,9 +165,11 @@ class ListItemPers(MDBoxLayout):
                 self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else ''), password=self.initPassword))
             else:
                 self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else '')))
-        self.add_widget(MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords))
+        self.hideIcon = MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords)
+        self.add_widget(self.hideIcon)
 
     def hidePasswords(self, instance):
+        print(instance)
         for child in self.children:
             if isinstance(child, MDTextFieldRows):
                 if child.idex in self.withHideIcon:
@@ -190,8 +192,8 @@ class Showdata(MDScrollView):
         self.add_widget(self.stacklayout)
         self.paintingRows()
 
-    def paintingRows(self): #revisar qque no vulve a hacer la query y no actualiza la self.data
-        self.data = self.loadData() # problema line
+    def paintingRows(self):
+        self.data = self.loadData()
         for datos in reversed(self.data[0]):
             self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
@@ -201,15 +203,17 @@ class Showdata(MDScrollView):
         self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(logic.countRowsInTable(get_app().pathBD, self.tableName)), idex=self.data[1], datos=['' if datos != 'id' else logic.countRowsInTable(get_app().pathBD, self.tableName) for datos in self.data[1]], withHideIcon=self.hiddenInputs, initPassword=False))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
 
-    def reloadRows(self): #revisar
-        self.data = self.loadData()
+    def reloadRows(self):
         self.stacklayout.clear_widgets()
         self.paintingRows()
 
-    def loadData(self):
+    def loadData(self): #finalizar
         rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, 5)
-        logic.verifyCodeError(rows,
-        {'1.key': '',
-        '1.bd': ''}, SnackbarPers)
+        if rows is '1.bd':
+            SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
+        elif rows is '1.query': #la query no se pudo hacer
+            SnackbarPers(text='Error desconocido que viene de la base de datos').open()
+        else:
+            return rows
 
 

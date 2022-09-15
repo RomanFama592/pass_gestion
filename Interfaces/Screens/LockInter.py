@@ -149,43 +149,43 @@ class LockInter(MDScreen):
         self.menu = DropMenuPers()
         return super().on_kv_post(base_widget)
 
-    def Browser(self, instance, BDorKey: bool, broserFolders: bool):
+    def Browser(self, instance, BDorKey: bool, browserFolders: bool):
         """
         It's a function that allows you to select a file or folder, depending on the value of the
-        variable broserFolders, and depending on the value of the variable BDorKey, it will assign the
+        variable browserFolders, and depending on the value of the variable BDorKey, it will assign the
         path to the variable get_app().pathBD or get_app().pathKey.
         
         :param instance: is the text input
         :param BDorKey: True is BD and False is Key
         :type BDorKey: bool
-        :param broserFolders: True is select folder and False is select file
-        :type broserFolders: bool
+        :param browserFolders: True is select folder and False is select file
+        :type browserFolders: bool
         """
         """BDorKey: True is BD and False is Key
             selectOrfind: True is select and find is False"""
 
-        if broserFolders:
+        if browserFolders:
             if BDorKey:
-                path = os.path.join(logic.browsePath(broserFolders, 'Selecciona la base de datos'), f'DB_of_{getuser()}{get_app().formatBD}')
+                path = os.path.join(logic.browsePath(browserFolders, 'Selecciona la base de datos'), f'DB_of_{getuser()}{get_app().formatBD}')
                 if path == '':
                     pass
                 else:
                     instance.text = get_app().pathBD = path
             else:
-                path = os.path.join(logic.browsePath(broserFolders,'Selecciona la llave de la base de datos'), f'Key_of_{getuser()}{get_app().formatKey}')
+                path = os.path.join(logic.browsePath(browserFolders,'Selecciona la llave de la base de datos'), f'Key_of_{getuser()}{get_app().formatKey}')
                 if path == '':
                     pass
                 else:
                     instance.text = get_app().pathKey = path
         else:
             if BDorKey:
-                path = logic.browsePath(broserFolders, 'Selecciona la base de datos', 'Base de datos PG files', f'*{get_app().formatBD}')
+                path = logic.browsePath(browserFolders, 'Selecciona la base de datos', 'Base de datos PG files', f'*{get_app().formatBD}')
                 if path == '':
                     pass
                 else:
                     instance.text = get_app().pathBD = path
             else:
-                path = logic.browsePath(broserFolders,'Selecciona la llave de la base de datos', 'Key files', f'*{get_app().formatKey}')
+                path = logic.browsePath(browserFolders,'Selecciona la llave de la base de datos', 'Key files', f'*{get_app().formatKey}')
                 if path == '':
                     pass
                 else:
@@ -203,19 +203,26 @@ class LockInter(MDScreen):
             get_app().pathKey = self.ids['Key path'].text
 
             verifyIntegrity = logic.verifyBD(get_app().pathBD, get_app().pathKey, SettingInter.table[0])
-            logic.verifyCodeError(verifyIntegrity, {
-                '1': 'las rutas especificadas no existen',
-                '1.bd': 'no existe la base de datos indicada',
-                '2.bd': 'la base de datos no es funcional',
-                '1.key': 'no existe la llave de base de datos indicada',
-                '2.key': 'la llave no es valida'}, SnackbarPers)
+            
             if verifyIntegrity == None:
                 sms = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
                 sms.children[1].remove_widget(sms.children[1].current_screen)
                 sms.refresh_tabs()
                 sms.switch_tab(get_app().primaryScreen)
                 get_app().sm.switch_to(get_app().sm.get_screen(MasterInterfaces.name))
-                get_app().sm.remove_widget(get_app().sm.get_screen(LockInter.name))
+                get_app().sm.remove_widget(get_app().sm.get_screen(LockInter.name)) 
+            elif verifyIntegrity == '1':
+                SnackbarPers(text='las rutas especificadas no existen').open()
+            elif verifyIntegrity == '1.bd':
+                SnackbarPers(text='no existe la base de datos indicada').open()
+            elif verifyIntegrity == '1.key':
+                SnackbarPers(text='no existe la llave de base de datos indicada').open()
+            elif verifyIntegrity == '2.bd':
+                SnackbarPers(text='la base de datos no es funcional').open()
+            elif verifyIntegrity == '2.key':
+                SnackbarPers(text='la llave no es valida').open()
+            
+
 
     def CreateBD(self):
         """
@@ -238,20 +245,30 @@ class LockInter(MDScreen):
         
         if verificationCreateDB & verificationCreateDBs:
             verification = logic.initDB(get_app().pathBD, get_app().pathKey, SettingInter.table, get_app().initWord)
-            logic.verifyCodeError(verification, {
-                'None': 'se ha creado la base de datos correctamente',
-                '1': 'existe la base de datos y la llave en las rutas indicadas',
-                '1.bd': 'existe la base de datos indicada',
-                '2.bd': 'no se pudo crear la base de datos',
-                '1.key': 'existe la llave de base de datos indicada',
-                '2.key': 'no se pudo crear la llave',
-                '3.key': 'error al encryptar el init word',
-                '4.key': 'la ruta indica tuvo un fallo'}, SnackbarPers)
+            if verification == None:
+                SnackbarPers(text='se ha creado la base de datos correctamente').open()
+            elif verification == '1':
+                SnackbarPers(text='existe la base de datos y la llave en las rutas indicadas').open()
+            elif verification == '1.bd':
+                SnackbarPers(text='existe la base de datos indicada').open()
+            elif verification == '1.key':
+                SnackbarPers(text='existe la llave de base de datos indicada').open()
+            elif verification == '2.bd':
+                SnackbarPers(text='no se pudo crear la base de datos').open()
+            elif verification == '2.key':
+                SnackbarPers(text='no se pudo crear la llave').open()
+            elif verification == '3.key':
+                SnackbarPers(text='error al encryptar el init word').open()
+            elif verification == '4.key':
+                SnackbarPers(text='la ruta indica tuvo un fallo').open()
+
+
             if verification in ['4.key', '3.key', '2.key']:
                 os.remove(get_app().pathBD)
-            if verification == '3.bd':
+            elif verification == '3.bd':
                 os.remove(get_app().pathBD)
                 os.remove(get_app().pathKey)
+            
             
     def PaletteColorsSelect(self, Dropitem, text_item):
         """
