@@ -1,6 +1,5 @@
 from kivymd.uix.screen import MDScreen
 from kivy.app import Builder
-import os
 from Interfaces.Components import FloatingButton, get_app
 from Interfaces.Screens import CardsInter, ErrorInter, PasswordsInter, SettingInter
 

@@ -206,6 +206,7 @@ class LockInter(MDScreen):
             
             if verifyIntegrity == None:
                 sms = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
+                print(sms.children)
                 sms.children[1].remove_widget(sms.children[1].current_screen)
                 sms.refresh_tabs()
                 sms.switch_tab(get_app().primaryScreen)
@@ -216,7 +217,7 @@ class LockInter(MDScreen):
             elif verifyIntegrity == '1.bd':
                 SnackbarPers(text='no existe la base de datos indicada').open()
             elif verifyIntegrity == '1.key':
-                SnackbarPers(text='no existe la llave de base de datos indicada').open()
+                SnackbarPers(text='no existe la llave de la base de datos indicada').open()
             elif verifyIntegrity == '2.bd':
                 SnackbarPers(text='la base de datos no es funcional').open()
             elif verifyIntegrity == '2.key':

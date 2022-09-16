@@ -115,67 +115,6 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
 
 
 
-
-#TextField para Showdata
-class MDTextFieldRows(MDTextField, MDTooltipPers):
-    idex = StringProperty()
-    mode = 'fill'
-    showOnce = False
-
-    def __init__(self, **kwargs):
-        self.AncientText = ''
-        super().__init__(**kwargs)
-        if not self.password:
-            self.tooltip_text = self.text
-        else:
-            self.tooltip_text = ''
-
-#WIP
-    def on_focus(self, instance_text_field, focus: bool):
-        if focus:
-            self.AncientText = self.text
-        else:
-            if self.AncientText != self.text: 
-                logic.insertData(get_app().pathBD, get_app().pathKey, instance_text_field.parent.table, instance_text_field.parent.id, instance_text_field.idex, instance_text_field.text)
-        return super().on_focus(instance_text_field, focus)
-
-    def on_enter(self, *args):
-        if self.password:
-            self.tooltip_text = ''
-        else:
-            self.tooltip_text = self.text
-        return super().on_enter(*args)
-
-#contenedor de textFields
-class ListItemPers(MDBoxLayout):
-    orientation = 'horizontal'
-    size_hint = (1, None)
-    height = NumericProperty(dp(30))
-    spacing = 10
-    table = StringProperty()
-    withHideIcon = ListProperty()
-    initPassword = BooleanProperty(True)
-
-    def __init__(self, datos: list, idex: list, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for text, id in zip(datos, idex):
-            if id == 'id':
-                self.add_widget(MDLabel(id=id, text=str(text)))
-            elif id in self.withHideIcon:
-                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else ''), password=self.initPassword))
-            else:
-                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else '')))
-        self.hideIcon = MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords)
-        self.add_widget(self.hideIcon)
-
-    def hidePasswords(self, instance):
-        print(instance)
-        for child in self.children:
-            if isinstance(child, MDTextFieldRows):
-                if child.idex in self.withHideIcon:
-                    child.password = not child.password
-                    instance.icon = "eye" if instance.icon == "eye-off" else "eye-off"
-
 #mostrador desplazable de filas
 class Showdata(MDScrollView):
     size_hint = (0.9, 1)
@@ -209,11 +148,70 @@ class Showdata(MDScrollView):
 
     def loadData(self): #finalizar
         rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, 5)
-        if rows is '1.bd':
+        if rows == '1.bd':
             SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
-        elif rows is '1.query': #la query no se pudo hacer
+        elif rows == '1.query': #la query no se pudo hacer
             SnackbarPers(text='Error desconocido que viene de la base de datos').open()
         else:
             return rows
 
+#contenedor de textFields
+class ListItemPers(MDBoxLayout):
+    orientation = 'horizontal'
+    size_hint = (1, None)
+    height = NumericProperty(dp(30))
+    spacing = 10
+    table = StringProperty()
+    withHideIcon = ListProperty()
+    initPassword = BooleanProperty(True)
+
+    def __init__(self, datos: list, idex: list, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for text, id in zip(datos, idex):
+            if id == 'id':
+                self.add_widget(MDLabel(id=id, text=str(text)))
+            elif id in self.withHideIcon:
+                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else ''), password=self.initPassword))
+            else:
+                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else '')))
+        self.hideIcon = MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords)
+        self.add_widget(self.hideIcon)
+
+    def hidePasswords(self, instance):
+        print(instance)
+        for child in self.children:
+            if isinstance(child, MDTextFieldRows):
+                if child.idex in self.withHideIcon:
+                    child.password = not child.password
+                    instance.icon = "eye" if instance.icon == "eye-off" else "eye-off"
+
+#TextField para Showdata
+class MDTextFieldRows(MDTextField, MDTooltipPers):
+    idex = StringProperty()
+    mode = 'fill'
+    showOnce = False
+
+    def __init__(self, **kwargs):
+        self.AncientText = ''
+        super().__init__(**kwargs)
+        if not self.password:
+            self.tooltip_text = self.text
+        else:
+            self.tooltip_text = ''
+
+#WIP
+    def on_focus(self, instance_text_field, focus: bool):
+        if focus:
+            self.AncientText = self.text
+        else:
+            if self.AncientText != self.text: 
+                logic.insertData(get_app().pathBD, get_app().pathKey, instance_text_field.parent.table, instance_text_field.parent.id, instance_text_field.idex, instance_text_field.text)
+        return super().on_focus(instance_text_field, focus)
+
+    def on_enter(self, *args):
+        if self.password:
+            self.tooltip_text = ''
+        else:
+            self.tooltip_text = self.text
+        return super().on_enter(*args)
 
