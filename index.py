@@ -13,7 +13,7 @@ import os, darkdetect, json, ctypes, Utils.logic as logic
 """f'C:/Users/{getuser()}/Documents'"""
 #self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
 # root.manager.resibleFont(self.height, self.width, 0.5)
-#prueba 2
+
 def createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema, primaryScreen):
     settingJson = json.dumps({'pathBD': pathBD,
                                 'pathKey': pathKey,
