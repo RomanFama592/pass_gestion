@@ -109,18 +109,81 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
         return super().on_enter(*args)
 
     def loadTheShowData(self): #WIP reference
-        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.table[0], 5)
-        if not rows == None: 
-            self.showdata = Showdata(data=rows, tableName = self.table[0], hiddenInputs=self.hiddenInputs)
-            self.children[0].add_widget(self.showdata)
-        elif rows == '1.bd':
-            pass
-        elif rows == '1.query':
-            pass
+        self.showdata = Showdata(tableName = self.table[0], hiddenInputs=self.hiddenInputs)
+        self.children[0].add_widget(self.showdata)
 
 
 
 
+#mostrador desplazable de filas
+class Showdata(MDScrollView):
+    size_hint = (0.9, 1)
+    pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+    spacing = 10
+    tableName = StringProperty()
+    hiddenInputs = ListProperty()
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data = self.loadData()
+        self.stacklayout = MDStackLayout(orientation='bt-lr',
+                                        size_hint_y=None)        
+        self.add_widget(self.stacklayout)
+        self.paintingRows()
+
+    def paintingRows(self):
+        self.data = self.loadData()
+        for datos in reversed(self.data[0]):
+            self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
+        self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
+
+    def addRow(self):
+        logic.createEmptyRow(get_app().pathBD, self.tableName, self.data[1])
+        self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(logic.countRowsInTable(get_app().pathBD, self.tableName)), idex=self.data[1], datos=['' if datos != 'id' else logic.countRowsInTable(get_app().pathBD, self.tableName) for datos in self.data[1]], withHideIcon=self.hiddenInputs, initPassword=False))
+        self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
+
+    def reloadRows(self):
+        self.stacklayout.clear_widgets()
+        self.paintingRows()
+
+    def loadData(self): #finalizar
+        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, 5)
+        if rows == '1.bd':
+            SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
+        elif rows == '1.query': #la query no se pudo hacer
+            SnackbarPers(text='Error desconocido que viene de la base de datos').open()
+        else:
+            return rows
+
+#contenedor de textFields
+class ListItemPers(MDBoxLayout):
+    orientation = 'horizontal'
+    size_hint = (1, None)
+    height = NumericProperty(dp(30))
+    spacing = 10
+    table = StringProperty()
+    withHideIcon = ListProperty()
+    initPassword = BooleanProperty(True)
+
+    def __init__(self, datos: list, idex: list, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for text, id in zip(datos, idex):
+            if id == 'id':
+                self.add_widget(MDLabel(id=id, text=str(text)))
+            elif id in self.withHideIcon:
+                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else ''), password=self.initPassword))
+            else:
+                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else '')))
+        self.hideIcon = MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords)
+        self.add_widget(self.hideIcon)
+
+    def hidePasswords(self, instance):
+        print(instance)
+        for child in self.children:
+            if isinstance(child, MDTextFieldRows):
+                if child.idex in self.withHideIcon:
+                    child.password = not child.password
+                    instance.icon = "eye" if instance.icon == "eye-off" else "eye-off"
 
 #TextField para Showdata
 class MDTextFieldRows(MDTextField, MDTooltipPers):
@@ -151,61 +214,4 @@ class MDTextFieldRows(MDTextField, MDTooltipPers):
         else:
             self.tooltip_text = self.text
         return super().on_enter(*args)
-
-#contenedor de textFields
-class ListItemPers(MDBoxLayout):
-    orientation = 'horizontal'
-    size_hint = (1, None)
-    height = NumericProperty(dp(30))
-    spacing = 10
-    table = StringProperty()
-    withHideIcon = ListProperty()
-    initPassword = BooleanProperty(True)
-
-    def __init__(self, datos: list, idex: list, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for text, id in zip(datos, idex):
-            if id == 'id':
-                self.add_widget(MDLabel(id=id, text=str(text)))
-            elif id in self.withHideIcon:
-                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else ''), password=self.initPassword))
-            else:
-                self.add_widget(MDTextFieldRows(idex=str(id), text=str(text if text != None else '')))
-        self.add_widget(MDIconButton(icon="eye" if self.initPassword else "eye-off", on_release=self.hidePasswords))
-
-    def hidePasswords(self, instance):
-        for child in self.children:
-            if isinstance(child, MDTextFieldRows):
-                if child.idex in self.withHideIcon:
-                    child.password = not child.password
-                    instance.icon = "eye" if instance.icon == "eye-off" else "eye-off"
-
-#mostrador desplazable de filas
-class Showdata(MDScrollView):
-    size_hint = (0.9, 1)
-    pos_hint = {'center_x': 0.5, 'center_y': 0.5}
-    spacing = 10
-    data = ListProperty()
-    tableName = StringProperty()
-    hiddenInputs = ListProperty()
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.stacklayout = MDStackLayout(orientation='bt-lr',
-                                        size_hint_y=None) #cada que se añada un item recalcular el height
-        #self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
-        self.add_widget(self.stacklayout)
-        self.paintingRows()
-
-#hacer que al subir la barra al tope se active el reload() del parent 
-    def paintingRows(self):
-        for datos in reversed(self.data[0]):
-            self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
-        self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
-
-    def addRow(self):
-        logic.createEmptyRow(get_app().pathBD, self.tableName, self.data[1])
-        self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(logic.countRowsInTable(get_app().pathBD, self.tableName)), idex=self.data[1], datos=['' if datos != 'id' else logic.countRowsInTable(get_app().pathBD, self.tableName) for datos in self.data[1]], withHideIcon=self.hiddenInputs, initPassword=False))
-        self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
-
 

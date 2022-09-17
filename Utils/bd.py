@@ -174,15 +174,13 @@ def encryptData(pathKey: str, data: str):
 
 def desEncryptData(pathKey: str, data: bytes):
     """
-    It takes a path to a key file and a byte array of data, and returns the decrypted data
+    It takes a path to a key file and a byte string, and returns a decrypted string
     
     :param pathKey: The path to the key file
-    :type data: str
-    
+    :type pathKey: str
     :param data: The data to be encrypted
     :type data: bytes
-    
-    :return: The encrypted data, None in case of error or False in case of not exist key file.
+    :return: The decrypted data.
     """
     try:
         with open(pathKey, 'rb') as keyfile:
