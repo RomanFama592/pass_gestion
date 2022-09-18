@@ -204,7 +204,9 @@ class MDTextFieldRows(MDTextField, MDTooltipPers):
             self.AncientText = self.text
         else:
             if self.AncientText != self.text: 
-                logic.insertData(get_app().pathBD, get_app().pathKey, instance_text_field.parent.table, instance_text_field.parent.id, instance_text_field.idex, instance_text_field.text)
+                logic.insertData(get_app().pathBD, get_app().pathKey,
+                instance_text_field.parent.table, instance_text_field.parent.id,
+                instance_text_field.idex, instance_text_field.text)
         return super().on_focus(instance_text_field, focus)
 
     def on_enter(self, *args):
