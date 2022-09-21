@@ -10,6 +10,7 @@ from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivymd.uix.tooltip import MDTooltip
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.button import MDIconButton
+from kivy.animation import Animation
 
 from kivymd.app import App
 from kivy.lang import Builder
@@ -68,7 +69,7 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pos_hint = {"center_x": 0.9}
-        self.pos = (0, "70dp")
+        self.pos = (0, dp(70))
         self.size = (dp(10), dp(10))
         self.elevation = 10
         self.tooltip_bg_color = get_app().theme_cls.primary_color
@@ -80,6 +81,22 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
         except:
             print(f'En {screen.name} no se puede usar este boton')
         return super().on_release()
+
+    def animHide(self):
+        self.disabled = True
+        animate = Animation(pos=(0, dp(15)+self.pos[1]), duration=0.1)
+        animate += Animation(pos=(0, dp(-100)), duration=0.24)
+        animate.start(self)
+    
+    def animShow(self):
+        def disableOff(*args):
+            print(args)
+            self.disabled = False
+        
+        animate = Animation(pos=(0, dp(70)), duration=0.2)
+        animate.start(self)
+        animate.bind(on_complete = disableOff)
+
 
 class MDBottomNavigationItemPers(MDBottomNavigationItem):
     name = ''

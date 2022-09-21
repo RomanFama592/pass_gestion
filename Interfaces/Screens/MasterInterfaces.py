@@ -11,9 +11,6 @@ class MasterInterfaces(MDScreen):
     MDBottomNavigation:
         id: sms
         ErrorInter:
-        PasswordsInter:
-        CardsInter:
-        SettingInter:
 #</KvLang>
 """
     def __init__(self, **kw):
@@ -21,5 +18,8 @@ class MasterInterfaces(MDScreen):
         super().__init__(**kw)
 
     def on_kv_post(self, base_widget):
+        screensToAdd = [PasswordsInter.PasswordsInter, CardsInter.CardsInter, SettingInter.SettingInter]
+        for screen in screensToAdd:
+            self.ids['sms'].add_widget(screen())
         self.add_widget(FloatingButton())
         return super().on_kv_post(base_widget)

@@ -206,7 +206,6 @@ class LockInter(MDScreen):
             
             if verifyIntegrity == None:
                 sms = get_app().sm.get_screen(MasterInterfaces().name).ids['sms']
-                print(sms.children)
                 sms.children[1].remove_widget(sms.children[1].current_screen)
                 sms.refresh_tabs()
                 sms.switch_tab(get_app().primaryScreen)
