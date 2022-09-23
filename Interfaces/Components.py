@@ -73,7 +73,7 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
         self.size = (dp(10), dp(10))
         self.elevation = 10
         self.tooltip_bg_color = get_app().theme_cls.primary_color
-        self.showButton = True
+        self.seeButton = True
         print(self.pos, self.pos_hint)
         
     def on_release(self):
@@ -84,23 +84,22 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
             print(f'En {screen.name} no se puede usar este boton')
         return super().on_release()
 
-#ver que pasa cuando se clickea en medio de la animacion
-    def showButton(self):
-        def disableOff(*args):
-            self.disabled = False
-
-        if self.showButton:
+    def hideButton(self):
+        if self.seeButton:
             self.disabled = True
             animate = Animation(pos=(0, dp(15)+self.pos[1]), duration=0.05)
             animate += Animation(pos=(0, dp(-100)), duration=0.2)
             animate.start(self)
-        else:
+            self.seeButton = False
+    
+    def showButton(self):
+        if not self.seeButton:
+            def disableOff(*args):
+                self.disabled = False
             animate = Animation(pos=(0, dp(70)), duration=0.2)
             animate.start(self)
             animate.bind(on_complete = disableOff)
-        
-        self.showButton != self.showButton
-        print(self.showButton)
+            self.seeButton = True
 
 
 
