@@ -69,10 +69,12 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pos_hint = {"center_x": 0.9}
-        self.pos = (0, dp(70))
+        self.pos = (0, dp(50))
         self.size = (dp(10), dp(10))
         self.elevation = 10
         self.tooltip_bg_color = get_app().theme_cls.primary_color
+        self.showButton = True
+        print(self.pos, self.pos_hint)
         
     def on_release(self):
         screen = get_app().sm.get_screen("MI").children[1].children[1].current_screen
@@ -82,20 +84,24 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
             print(f'En {screen.name} no se puede usar este boton')
         return super().on_release()
 
-    def animHide(self):
-        self.disabled = True
-        animate = Animation(pos=(0, dp(15)+self.pos[1]), duration=0.1)
-        animate += Animation(pos=(0, dp(-100)), duration=0.24)
-        animate.start(self)
-    
-    def animShow(self):
+#ver que pasa cuando se clickea en medio de la animacion
+    def showButton(self):
         def disableOff(*args):
-            print(args)
             self.disabled = False
+
+        if self.showButton:
+            self.disabled = True
+            animate = Animation(pos=(0, dp(15)+self.pos[1]), duration=0.05)
+            animate += Animation(pos=(0, dp(-100)), duration=0.2)
+            animate.start(self)
+        else:
+            animate = Animation(pos=(0, dp(70)), duration=0.2)
+            animate.start(self)
+            animate.bind(on_complete = disableOff)
         
-        animate = Animation(pos=(0, dp(70)), duration=0.2)
-        animate.start(self)
-        animate.bind(on_complete = disableOff)
+        self.showButton != self.showButton
+        print(self.showButton)
+
 
 
 class MDBottomNavigationItemPers(MDBottomNavigationItem):

@@ -17,7 +17,5 @@ class CardsInter(MDBottomNavigationItemPers):
 <CardsInter>:
     MDBoxLayout:
         orientation: 'vertical'
-        MDRelativeLayout:
-            size_hint: 1, 0.2
 #</KvLang>
 """

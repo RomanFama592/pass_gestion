@@ -21,5 +21,5 @@ class MasterInterfaces(MDScreen):
         screensToAdd = [PasswordsInter.PasswordsInter, CardsInter.CardsInter, SettingInter.SettingInter]
         for screen in screensToAdd:
             self.ids['sms'].add_widget(screen())
-        self.add_widget(FloatingButton())
+        self.add_widget(FloatingButton(id='floatingButton'))
         return super().on_kv_post(base_widget)

@@ -20,9 +20,9 @@ class SettingInter(MDBottomNavigationItemPers):
     saveNameInJSON = False
 
     def on_tab_press(self, *args) -> None:
-        get_app().sm.get_screen("MI").children[0].animHide()
+        get_app().sm.get_screen("MI").ids['floatingButton'].showButton()
         return super().on_tab_press(*args)
 
     def on_pre_leave(self, *args):
-        get_app().sm.get_screen("MI").children[0].animShow()
+        get_app().sm.get_screen("MI").ids['floatingButton'].showButton()
         return super().on_pre_leave(*args)
