@@ -41,7 +41,7 @@ def verifyBD(pathBD, pathKey, tableName):
     if os.path.exists(pathBD) & os.path.exists(pathKey):
         verifyTable = bd.query(pathBD, "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';", returnData=True, sizeReturn='all', dictwithrowaskey=True)['name']
         if tableName in verifyTable:
-            initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {tableName};", returnData=True, sizeReturn='one', dictwithrowaskey=True)
+            initWordAndHash = bd.query(pathBD, f"SELECT initWord, hashInitWord FROM {tableName};", returnData=True, sizeReturn=1, dictwithrowaskey=True)
             if initWordAndHash == False:
                 return '2.bd' #la base de datos esta dañada
             elif initWordAndHash == {}:
@@ -64,8 +64,9 @@ def verifyBD(pathBD, pathKey, tableName):
     elif not os.path.exists(pathKey):
         return '1.key'
     
-def extractData(pathBD, pathKey, tableName, quantityRows):
-    data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id desc', returnData=True, sizeReturn=quantityRows, returnNameofColumns=True)
+def extractData(pathBD, pathKey, tableName, quantityRows, search: str = ''):
+    data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id desc', returnData=True, sizeReturn=quantityRows, returnNameofColumns=True)     
+    print(data)
     #WIP
     if data != False:
         dataNew = []
@@ -73,11 +74,18 @@ def extractData(pathBD, pathKey, tableName, quantityRows):
             if isinstance(rows, tuple) or isinstance(rows, list):
                 dataNew2 = []
                 for columnValue in rows:
-                    if isinstance(columnValue, bytes): 
+                    if isinstance(columnValue, bytes):
                         dataNew2.append(bd.desEncryptData(pathKey, columnValue)) #puede error
                     else:
                         dataNew2.append(columnValue)
-                dataNew.append(dataNew2)
+                if search == '':
+                    dataNew.append(dataNew2)
+                else:
+                    for dato in dataNew2:
+                        if search in str(dato):
+                            print(dataNew2)
+                            dataNew.append(dataNew2)
+                            break
         return (dataNew, data[1])
     elif data == False:
         return '1.query'
@@ -134,7 +142,7 @@ def countRowsInTable(pathBD: str, tableName):
     :param tableName: the name of the table you want to count the rows of
     :return: The number of rows in the table.
     """
-    countRows = bd.query(pathBD, f"SELECT COUNT(id) from {tableName}", returnData=True, dictwithrowaskey=True,sizeReturn='one')
+    countRows = bd.query(pathBD, f"SELECT COUNT(id) from {tableName}", returnData=True, dictwithrowaskey=True,sizeReturn=1)
     return countRows['COUNT(id)']
 
 

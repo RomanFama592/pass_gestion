@@ -91,7 +91,7 @@ def query(pathBD: str, command: str, parameters: tuple = (),
         else:    
             if returnData: 
                 if returnNameofColumns:
-                    if sizeReturn == 'one':
+                    if sizeReturn == 1:
                         return (cursor.fetchone(), returnRownames(cursor.description))
                     elif isinstance(sizeReturn, int):
                         return (cursor.fetchmany(sizeReturn), returnRownames(cursor.description))
@@ -100,7 +100,7 @@ def query(pathBD: str, command: str, parameters: tuple = (),
                     else:
                         raise Exception(f'la variable sizeReturn no tiene un valor correspondiente, valor: {sizeReturn} en la consulta: {command}')
                 elif dictwithrowaskey:
-                    if sizeReturn == 'one':
+                    if sizeReturn == 1:
                         return dictWithRownamesAsKey(cursor.fetchone(), cursor.description)
                     elif isinstance(sizeReturn, int):
                         return dictWithRownamesAsKey(cursor.fetchmany(sizeReturn), cursor.description)
@@ -109,7 +109,7 @@ def query(pathBD: str, command: str, parameters: tuple = (),
                     else:
                         raise Exception(f'la variable sizeReturn no tiene un valor correspondiente, valor: {sizeReturn} en la consulta: {command}')
                 else:
-                    if sizeReturn == 'one':
+                    if sizeReturn == 1:
                         return cursor.fetchone()
                     elif isinstance(sizeReturn, int):
                         return cursor.fetchmany(sizeReturn)

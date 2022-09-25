@@ -74,7 +74,6 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
         self.elevation = 10
         self.tooltip_bg_color = get_app().theme_cls.primary_color
         self.seeButton = True
-        print(self.pos, self.pos_hint)
         
     def on_release(self):
         screen = get_app().sm.get_screen("MI").children[1].children[1].current_screen
@@ -101,8 +100,6 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
             animate.bind(on_complete = disableOff)
             self.seeButton = True
 
-
-
 class MDBottomNavigationItemPers(MDBottomNavigationItem):
     name = ''
     kv = ''
@@ -117,6 +114,7 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
         super().__init__(*args, **kwargs)
         
     def on_enter(self, *args):
+        super().on_enter(*args)
         if self.initTable:
             logic.createTable(get_app().pathBD, self.table)
             self.initTable = False
@@ -127,7 +125,6 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
 
         if self.saveNameInJSON:
             get_app().primaryScreen = self.name
-        return super().on_enter(*args)
 
     def loadTheShowData(self): #WIP reference
         self.showdata = Showdata(tableName = self.table[0], hiddenInputs=self.hiddenInputs)
@@ -143,10 +140,11 @@ class Showdata(MDScrollView):
     spacing = 10
     tableName = StringProperty()
     hiddenInputs = ListProperty()
+    amountRows = 5
+    search = ''
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data = self.loadData()
         self.stacklayout = MDStackLayout(orientation='bt-lr',
                                         size_hint_y=None)        
         self.add_widget(self.stacklayout)
@@ -168,7 +166,7 @@ class Showdata(MDScrollView):
         self.paintingRows()
 
     def loadData(self): #finalizar
-        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, 5)
+        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, self.amountRows, self.search)
         if rows == '1.bd':
             SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
         elif rows == '1.query': #la query no se pudo hacer
