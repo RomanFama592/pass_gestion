@@ -68,6 +68,7 @@ def extractData(pathBD, pathKey, tableName, quantityRows, search: str = ''):
     data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id desc', returnData=True, sizeReturn=quantityRows, returnNameofColumns=True)     
     print(data)
     #WIP
+    #devolver un diccionario con las columnas como clave y interrar cantidad de claves y a su vez que intere entre los items
     if data != False:
         dataNew = []
         for rows in data[0]:

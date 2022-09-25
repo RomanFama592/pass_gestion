@@ -166,7 +166,8 @@ class Showdata(MDScrollView):
         self.paintingRows()
 
     def loadData(self): #finalizar
-        rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName, self.amountRows, self.search)
+        rows = logic.extractData(get_app().pathBD, get_app().pathKey,
+        self.tableName, self.amountRows, self.search)
         if rows == '1.bd':
             SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
         elif rows == '1.query': #la query no se pudo hacer
