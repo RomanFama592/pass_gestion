@@ -143,6 +143,7 @@ class Showdata(MDScrollView):
     amountRows = 5
     search = ''
     
+    #modificar en base a logic.extracData()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stacklayout = MDStackLayout(orientation='bt-lr',
@@ -152,7 +153,7 @@ class Showdata(MDScrollView):
 
     def paintingRows(self):
         self.data = self.loadData()
-        for datos in reversed(self.data[0]):
+        for datos in self.data:
             self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
 
@@ -167,7 +168,7 @@ class Showdata(MDScrollView):
 
     def loadData(self): #finalizar
         rows = logic.extractData(get_app().pathBD, get_app().pathKey,
-        self.tableName, self.amountRows, self.search)
+        self.tableName)
         if rows == '1.bd':
             SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
         elif rows == '1.query': #la query no se pudo hacer

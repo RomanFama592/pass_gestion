@@ -64,32 +64,24 @@ def verifyBD(pathBD, pathKey, tableName):
     elif not os.path.exists(pathKey):
         return '1.key'
     
-def extractData(pathBD, pathKey, tableName, quantityRows, search: str = ''):
-    data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id desc', returnData=True, sizeReturn=quantityRows, returnNameofColumns=True)     
-    print(data)
-    #WIP
-    #devolver un diccionario con las columnas como clave y interrar cantidad de claves y a su vez que intere entre los items
+def extractData(pathBD, pathKey, tableName):
+    data = bd.query(pathBD, f'SELECT * FROM {tableName}', returnData=True, sizeReturn='all', dictwithrowaskey=True)
+    
     if data != False:
-        dataNew = []
-        for rows in data[0]:
-            if isinstance(rows, tuple) or isinstance(rows, list):
-                dataNew2 = []
-                for columnValue in rows:
-                    if isinstance(columnValue, bytes):
-                        dataNew2.append(bd.desEncryptData(pathKey, columnValue)) #puede error
-                    else:
-                        dataNew2.append(columnValue)
-                if search == '':
-                    dataNew.append(dataNew2)
+        columns = {}
+        for key, values in zip(data.keys(), data.values()):
+            column = []
+            for value in values:
+                if isinstance(value, bytes):
+                    column.append(bd.desEncryptData(pathKey, value))
                 else:
-                    for dato in dataNew2:
-                        if search in str(dato):
-                            print(dataNew2)
-                            dataNew.append(dataNew2)
-                            break
-        return (dataNew, data[1])
+                    column.append(value)
+            columns[key] = column
+        return columns
+
     elif data == False:
         return '1.query'
+
     elif data == None:
         return '1.bd'
 
