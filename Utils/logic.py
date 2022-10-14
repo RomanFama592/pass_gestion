@@ -86,16 +86,6 @@ def extractData(pathBD, pathKey, tableName):
         return '1.bd'
 
 def insertData(pathBD, pathKey, tableName, rowId, column, data):
-    """
-    It encrypts the data and then inserts it into the database
-    
-    :param pathBD: The path to the database file
-    :param pathKey: The path to the key file
-    :param tableName: The name of the table you want to insert data into
-    :param rowId: The id of the row you want to update
-    :param column: The column name in the table
-    :param data: the data to be inserted
-    """
     dataenc = bd.encryptData(pathKey, str(data))
     if dataenc == None:
         print('error encrypt')
