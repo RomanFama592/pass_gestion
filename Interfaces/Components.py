@@ -153,8 +153,9 @@ class Showdata(MDScrollView):
 
     def paintingRows(self):
         self.data = self.loadData()
-        for datos in self.data:
-            self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=self.data[1], datos=datos, withHideIcon=self.hiddenInputs))
+        print(list(self.data.keys()))
+        for datos in [data for data in self.data]:
+            self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=list(self.data.keys()), datos=datos, withHideIcon=self.hiddenInputs))
         self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
 
     def addRow(self):
