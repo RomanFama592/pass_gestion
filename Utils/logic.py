@@ -94,14 +94,9 @@ def insertData(pathBD, pathKey, tableName, rowId, column, data):
     print('insertado satis')
 
 def createEmptyRow(pathBD, tableName, columns):
-    """
-    It creates an empty row in a table
-    
-    :param pathBD: The path to the database
-    :param tableName: The name of the table you want to create a row in
-    :param columns: a list of the columns in the table
-    """
-    bd.query(pathBD, f'INSERT INTO "{tableName}" {str([column for column in columns]).replace("[", "(").replace("]", ")")} VALUES {str(["" if column != "id" else str(countRowsInTable(pathBD, tableName)+1) for column in columns]).replace("[", "(").replace("]", ")")};')
+    columns = str([column if column != "id" else "" for column in columns]).replace("[", "(").replace("]", ")")
+    values = str(["" if column != "id" else str(countRowsInTable(pathBD, tableName)+1) for column in columns]).replace("[", "(").replace("]", ")")
+    bd.query(pathBD, f'INSERT INTO "{tableName}" {columns} VALUES {values};')
 
 def createTable(pathBD: str, table):
     """
