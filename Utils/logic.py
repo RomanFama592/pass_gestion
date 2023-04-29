@@ -63,24 +63,6 @@ def verifyBD(pathBD, pathKey, tableName):
         return '1.bd'
     elif not os.path.exists(pathKey):
         return '1.key'
-<<<<<<< HEAD
-    
-def extractData(pathBD, pathKey, tableName):
-    data = bd.query(pathBD, f'SELECT * FROM {tableName}', returnData=True, sizeReturn='all', dictwithrowaskey=True)
-    
-    if data != False:
-        columns = {}
-        for key, values in zip(data.keys(), data.values()):
-            column = []
-            for value in values:
-                if isinstance(value, bytes):
-                    column.append(bd.desEncryptData(pathKey, value))
-                else:
-                    column.append(value)
-            columns[key] = column
-        return columns
-
-=======
 
 # TODO: modificar para que acepte los parametros amountRows y search
 def extractData(pathBD, pathKey, tableName):
@@ -98,7 +80,6 @@ def extractData(pathBD, pathKey, tableName):
                         dataNew2[index] = value
             dataNew.append(dataNew2)
         return (dataNew, data[1])
->>>>>>> main
     elif data == False:
         return '1.query'
 
@@ -106,10 +87,7 @@ def extractData(pathBD, pathKey, tableName):
         return '1.bd'
 
 def insertData(pathBD, pathKey, tableName, rowId, column, data):
-<<<<<<< HEAD
-=======
     # print(rowId, "-", column, ":", data)
->>>>>>> main
     dataenc = bd.encryptData(pathKey, str(data))
     if dataenc == None:
         print('error encrypt')
@@ -125,17 +103,12 @@ def deleteRow(pathBD, tableName, rowId):
     # bd.query(pathBD, f'UPDATE {tableName} SET id = id - 1 WHERE id > {rowId};')
 
 def createEmptyRow(pathBD, tableName, columns):
-<<<<<<< HEAD
-    columns = str([column if column != "id" else "" for column in columns]).replace("[", "(").replace("]", ")")
-    values = str(["" if column != "id" else str(countRowsInTable(pathBD, tableName)+1) for column in columns]).replace("[", "(").replace("]", ")")
-=======
     columns.remove("id")
     values = ['' for i in columns]
 
     columns = str(columns).replace("[", "(").replace("]", ")")
     values = str(values).replace("[", "(").replace("]", ")")
 
->>>>>>> main
     bd.query(pathBD, f'INSERT INTO "{tableName}" {columns} VALUES {values};')
 
 def createTable(pathBD: str, table):

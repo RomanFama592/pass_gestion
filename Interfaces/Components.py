@@ -85,23 +85,13 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-<<<<<<< HEAD
-        self.pos_hint = {"center_x": 0.9}
-        self.pos = (0, dp(50))
-=======
         self.pos_hint = {"center_x": 0.95}
         self.pos_y_origin = dp(40)
         self.pos = (0, self.pos_y_origin)
->>>>>>> main
         self.size = (dp(10), dp(10))
         self.elevation = get_app().elevation
         self.tooltip_bg_color = get_app().theme_cls.primary_color
         self.seeButton = True
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> main
     def on_release(self):
         screen = get_app().sm.get_screen("MI").children[1].children[1].current_screen
         try:
@@ -113,25 +103,6 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
     def hideButton(self):
         if self.seeButton:
             self.disabled = True
-<<<<<<< HEAD
-            animate = Animation(pos=(0, dp(15)+self.pos[1]), duration=0.05)
-            animate += Animation(pos=(0, dp(-100)), duration=0.2)
-            animate.start(self)
-            self.seeButton = False
-    
-    def showButton(self):
-        if not self.seeButton:
-            def disableOff(*args):
-                self.disabled = False
-            animate = Animation(pos=(0, dp(70)), duration=0.2)
-            animate.start(self)
-            animate.bind(on_complete = disableOff)
-            self.seeButton = True
-
-class MDBottomNavigationItemPers(MDBottomNavigationItem):
-    name = ''
-    kv = ''
-=======
             animate = Animation(pos=(0, self.pos[1] + dp(15)), duration=0.05)
             animate += Animation(pos=(0, -self.pos_y_origin * 2), duration=0.2)
             animate.start(self)
@@ -152,7 +123,6 @@ class MDBottomNavigationItemPers(MDBottomNavigationItem):
 class ScreenCustomizable(MDBottomNavigationItem):
     name = ""
     kv = ""
->>>>>>> main
     hiddenInputs = ListProperty()
     loadShowdata = True
     initTable = True
@@ -204,21 +174,11 @@ class Showdata(MDScrollView):
     tableName = StringProperty()
     hiddenInputs = ListProperty()
     amountRows = 5
-<<<<<<< HEAD
-    search = ''
-    
-    #modificar en base a logic.extracData()
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.stacklayout = MDStackLayout(orientation='bt-lr',
-                                        size_hint_y=None)        
-=======
     search = ""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stacklayout = MDStackLayout(orientation="bt-lr", size_hint_y=None)
->>>>>>> main
         self.add_widget(self.stacklayout)
         self.paintingRows()
 
@@ -237,14 +197,7 @@ class Showdata(MDScrollView):
     @logic.measure_time
     def paintingRows(self):
         self.data = self.loadData()
-<<<<<<< HEAD
-        print(list(self.data.keys()))
-        for datos in [data for data in self.data]:
-            self.stacklayout.add_widget(ListItemPers(table=self.tableName, id=str(datos[0]), idex=list(self.data.keys()), datos=datos, withHideIcon=self.hiddenInputs))
-        self.stacklayout.height = sum(x.height for x in self.stacklayout.children)
-=======
         self.rows_name = self.data[1]
->>>>>>> main
 
         for row in self.data[0]:
             row = ListItemPers(
@@ -285,15 +238,6 @@ class Showdata(MDScrollView):
         self.stacklayout.clear_widgets()
         self.paintingRows()
 
-<<<<<<< HEAD
-    def loadData(self): #finalizar
-        rows = logic.extractData(get_app().pathBD, get_app().pathKey,
-        self.tableName)
-        if rows == '1.bd':
-            SnackbarPers(text='La base de datos se encuentra fuera de su lugar').open()
-        elif rows == '1.query': #la query no se pudo hacer
-            SnackbarPers(text='Error desconocido que viene de la base de datos').open()
-=======
     @logic.measure_time
     def loadData(self):
         rows = logic.extractData(get_app().pathBD, get_app().pathKey, self.tableName)
@@ -301,7 +245,6 @@ class Showdata(MDScrollView):
             SnackbarPers(text="La base de datos se encuentra fuera de su lugar").open()
         elif rows == "1.query":  # la query no se pudo hacer
             SnackbarPers(text="Error desconocido que viene de la base de datos").open()
->>>>>>> main
         else:
             return rows
 
