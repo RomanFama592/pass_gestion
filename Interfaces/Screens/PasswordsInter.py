@@ -1,4 +1,4 @@
-from Interfaces.Components import ScreenCustomizable
+from Interfaces.Components import ScreenCustomizable, MDBoxLayoutPers, Showdata
 from Interfaces.Components import get_app
 
 class PasswordsInter(ScreenCustomizable):
