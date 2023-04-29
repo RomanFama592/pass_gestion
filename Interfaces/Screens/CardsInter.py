@@ -1,7 +1,7 @@
-from Interfaces.Components import MDBottomNavigationItemPers, MDBoxLayoutPers
+from Interfaces.Components import ScreenCustomizable
 from Interfaces.Components import get_app
 
-class CardsInter(MDBottomNavigationItemPers):
+class CardsInter(ScreenCustomizable):
     name = 'Cards'
     icon = 'plus'
     hiddenInputs = ['numberCards', 'expirationDate', 'codSeg']

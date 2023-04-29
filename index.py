@@ -8,7 +8,7 @@ from kivy.properties import StringProperty
 from Interfaces.Components import SnackbarPers, get_app
 from Interfaces.Screens import LockInter, MasterInterfaces
 
-import os, darkdetect, json, ctypes, Utils.logic as logic
+import os, darkdetect, json, ctypes
 
 """f'C:/Users/{getuser()}/Documents'"""
 #self.query(f"CREATE TABLE IF NOT EXISTS {self.tables[-1][0]} {self.tables[-1][1]}")
@@ -28,19 +28,21 @@ def createJSON(pathSetting, pathBD, pathKey, initWord, paleta, tema, primaryScre
 
 #create variable initialization
 pathOrigin = os.getcwd()
-formatBD = f'.bdpg'
-formatKey = f'.key'
+formatBD = '.db' #'.bdpg'
+formatKey = '.key'
 pathSetting = os.path.join(pathOrigin, 'setting.json')
 
 if os.path.exists(pathSetting):
     with open(pathSetting, 'r') as settingFile:
         settingJson = json.load(settingFile)
-    initWord = settingJson.get('initWord', 'nene que se porta mal')
-    pathBD = settingJson.get('pathBD', f'{pathOrigin}\Database{formatBD}')
-    pathKey = settingJson.get('pathKey', f'{pathOrigin}\encryptionKey{formatKey}')
+    
+    initWord = settingJson.get('initWord', 'nene que se porta mal') # TODO: hacer que se pueda elegir la palabra de aleatoriedad desde la interfaz
     paleta = settingJson.get('paleta', 'Cyan')
     tema = settingJson.get('tema', '')
-    primaryScreen = settingJson.get('primaryScreen', MasterInterfaces.PasswordsInter.PasswordsInter.name)
+    primaryScreen = settingJson.get('primaryScreen', MasterInterfaces.PasswordsInter.PasswordsInter.name)    
+    pathBD = settingJson.get('pathBD', f'{pathOrigin}\Database{formatBD}')
+    pathKey = settingJson.get('pathKey', f'{pathOrigin}\encryptionKey{formatKey}')
+
 else:
     initWord = 'nene que se porta mal'
     pathBD = f'{pathOrigin}\Database{formatBD}'
@@ -67,6 +69,7 @@ class AppMain(MDApp):
     #hacer verificacion de que estas variables son correctas
 
     title = 'PassGestion'
+    elevation = 2
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -88,19 +91,6 @@ class AppMain(MDApp):
         return self.sm
 
     def dragAndDrop(self, window, pathname: bytes, *pos):
-        """
-        If the file dropped is a database, then the path of the database is saved in the variable
-        self.pathBD, and the text of the textinput is changed to the path of the database.
-        If the file dropped is a key, then the path of the key is saved in the variable self.pathKey,
-        and the text of the textinput is changed to the path of the key.
-        If the file dropped is neither a database nor a key, then a snackbar is shown saying that the
-        file is not a valid file.
-        
-        :param window: The window that the file was dropped on
-        :param pathname: The path to the file that was dropped
-        :type pathname: bytes
-        """
-        
         pathname = pathname.decode()
 
         if self.sm.current == LockInter.LockInter.name:

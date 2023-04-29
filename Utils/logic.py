@@ -1,6 +1,6 @@
 from tkinter import Tk, filedialog as filed
-from time import localtime
-import os, sqlite3
+from time import localtime, time
+import os
 if __name__ != '__main__':
     import Utils.bd as bd
 else: import bd
@@ -63,6 +63,7 @@ def verifyBD(pathBD, pathKey, tableName):
         return '1.bd'
     elif not os.path.exists(pathKey):
         return '1.key'
+<<<<<<< HEAD
     
 def extractData(pathBD, pathKey, tableName):
     data = bd.query(pathBD, f'SELECT * FROM {tableName}', returnData=True, sizeReturn='all', dictwithrowaskey=True)
@@ -79,6 +80,25 @@ def extractData(pathBD, pathKey, tableName):
             columns[key] = column
         return columns
 
+=======
+
+# TODO: modificar para que acepte los parametros amountRows y search
+def extractData(pathBD, pathKey, tableName):
+    #asc or desc
+    data = bd.query(pathBD, f'SELECT * FROM {tableName} ORDER BY id asc', returnData=True, sizeReturn='all', returnNameofColumns=True)     
+    if data != False:
+        dataNew = []
+        for row in data[0]:
+            dataNew2 = ["" for i in data[1]]
+            if isinstance(row, tuple) or isinstance(row, list):
+                for index, value in zip(range(data[1].__len__()+1), row):
+                    if isinstance(value, bytes):
+                        dataNew2[index] = bd.desEncryptData(pathKey, value) #puede error
+                    else:
+                        dataNew2[index] = value
+            dataNew.append(dataNew2)
+        return (dataNew, data[1])
+>>>>>>> main
     elif data == False:
         return '1.query'
 
@@ -86,16 +106,36 @@ def extractData(pathBD, pathKey, tableName):
         return '1.bd'
 
 def insertData(pathBD, pathKey, tableName, rowId, column, data):
+<<<<<<< HEAD
+=======
+    # print(rowId, "-", column, ":", data)
+>>>>>>> main
     dataenc = bd.encryptData(pathKey, str(data))
     if dataenc == None:
         print('error encrypt')
     else:
-        bd.query(pathBD, f"UPDATE {tableName} SET {column} = ? WHERE id = {rowId};", (dataenc,))
+        bd.query(pathBD, f"UPDATE {tableName} SET {column} = ? WHERE id = {rowId};", (dataenc,)) # TODO: añadir escape de error
     print('insertado satis')
 
+# TODO: Control de errores
+def deleteRow(pathBD, tableName, rowId):
+    bd.query(pathBD, f'DELETE FROM {tableName} WHERE id = {rowId};')
+
+    # esto para actualizar los id una vez que se elimina una fila
+    # bd.query(pathBD, f'UPDATE {tableName} SET id = id - 1 WHERE id > {rowId};')
+
 def createEmptyRow(pathBD, tableName, columns):
+<<<<<<< HEAD
     columns = str([column if column != "id" else "" for column in columns]).replace("[", "(").replace("]", ")")
     values = str(["" if column != "id" else str(countRowsInTable(pathBD, tableName)+1) for column in columns]).replace("[", "(").replace("]", ")")
+=======
+    columns.remove("id")
+    values = ['' for i in columns]
+
+    columns = str(columns).replace("[", "(").replace("]", ")")
+    values = str(values).replace("[", "(").replace("]", ")")
+
+>>>>>>> main
     bd.query(pathBD, f'INSERT INTO "{tableName}" {columns} VALUES {values};')
 
 def createTable(pathBD: str, table):
@@ -155,16 +195,25 @@ def browsePath(browseFolder: bool, title: str, mainTypeText: str=..., mainType: 
         path = filed.askopenfilename(title = title, filetypes = ((mainTypeText, mainType),("All files", "*.*")))
     return path
 
-def timeNow():
-    """
-    It returns the number of seconds since the start of the current minute
-    
-    :return: The time in seconds.
-    """
-    tiempo = localtime()
+def measure_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time()
+        result = func(*args, **kwargs)
+        end_time = time()
+        print(f"Execution time of {func.__name__}: {end_time - start_time} seconds")
+        return result
+    return wrapper
+
+""" def calculate_execution_time(func):
     #tiempo = str(tiempo.tm_hour) + ':' + str(tiempo.tm_min) + ':' + str(tiempo.tm_sec) + '.'
-    tiempo = (tiempo.tm_min*60) + tiempo.tm_sec
-    return tiempo
+    tiempo1 = localtime()
+    func()
+    tiempo2 = localtime()
+
+    tiempo1 = (tiempo1.tm_hour*60 + tiempo1.tm_min)*60 + tiempo1.tm_sec
+    tiempo2 = (tiempo2.tm_hour*60 + tiempo2.tm_min)*60 + tiempo2.tm_sec
+
+    print(tiempo2-tiempo1, "s") """
 
 '''def LoadPasswordOpera():
     """Devuelve un Data frame"""
@@ -174,4 +223,6 @@ def timeNow():
     PasswordsOri.to_excel(pathBD, sheet_name='Account', index=False)'''
 
 if __name__ == '__main__':
-    pass
+    pathbd = "D:\1Backup\Desktop\proyectos de programacion\Python\GuardarContrasenas\ConfigsInternal\DB_of_famar.bdpg"
+    pathkey = "D:\1Backup\Desktop\proyectos de programacion\Python\GuardarContrasenas\ConfigsInternal\Key_of_famarA.key"
+    extractData(pathbd, pathkey, )

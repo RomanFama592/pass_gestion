@@ -1,5 +1,4 @@
 import os
-from re import A
 import sqlite3 as sql
 #from cryptography.fernet import fernet.Fernet
 import cryptography.fernet as fernet
@@ -42,11 +41,12 @@ def dictWithRownamesAsKey(rows: list or tuple, cursorDescripcion):
 
 #base de datos
 def query(pathBD: str, command: str, parameters: tuple = (),
-          returnData: bool = False, sizeReturn: str or int = '' or 0,
+          returnData: bool = False, sizeReturn = 'all',
           executeMany: bool = False, createDB: bool = False,
           returnNameofColumns: bool = False, dictwithrowaskey: bool = False):
     """
-    It's a function that allows you to execute a query in a database, and return the data if you want
+    It executes a query in a database, and returns the data if the query is a select, or returns True if
+    the query is an insert, update or delete
     
     :param pathBD: str, command: str, parameters: tuple = (),
     :type pathBD: str
@@ -56,21 +56,22 @@ def query(pathBD: str, command: str, parameters: tuple = (),
     :type parameters: tuple
     :param returnData: bool = False, sizeReturn: str or int = '' or 0,, defaults to False
     :type returnData: bool (optional)
-    :param sizeReturn: str or int = '' or 0,
+    :param sizeReturn: the number of row that are returned(str: "all"), default "all"
     :type sizeReturn: str or int
     :param executeMany: if you want to execute many commands at once, you must pass the commands in a
     list of tuples, and the parameters in a list of tuples, and set this parameter to True, defaults to
     False
     :type executeMany: bool (optional)
-    :param createDB: if you want to create the database if it doesn't exist, defaults to False
+    :param createDB: if you want to create the database if it doesn't exist, set this to True, defaults
+    to False
     :type createDB: bool (optional)
     :param returnNameofColumns: bool = False, dictwithrowaskey: bool = False, defaults to False
     :type returnNameofColumns: bool (optional)
     :param dictwithrowaskey: bool = False, defaults to False
     :type dictwithrowaskey: bool (optional)
-    :return: a tuple with the data and the names of the columns, False if not execute good the query or None if not exist the data base.
+    :return: a tuple with the data and the names of the columns.
     """
-
+    
     verifyPath = os.path.exists(pathBD)
     
     if createDB:

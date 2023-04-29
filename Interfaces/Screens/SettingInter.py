@@ -1,7 +1,7 @@
-from Interfaces.Components import MDBottomNavigationItemPers, FloatingButton
+from Interfaces.Components import ScreenCustomizable
 from Interfaces.Components import get_app
 
-class SettingInter(MDBottomNavigationItemPers):
+class SettingInter(ScreenCustomizable):
     name = 'Settings'
     icon = 'minus'
     table = ('userconfigs',"""(
