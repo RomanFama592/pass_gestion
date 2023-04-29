@@ -1,4 +1,0 @@
-kivymd = 1.0.1
-kivy = 2.1.0
-darkdetect = 0.7.1
-cryptography = 37.0.4

@@ -1,7 +1,7 @@
-from Interfaces.Components import MDBottomNavigationItemPers
+from Interfaces.Components import ScreenCustomizable
 from Interfaces.Components import get_app
 
-class ErrorInter(MDBottomNavigationItemPers):
+class ErrorInter(ScreenCustomizable):
     name = 'Error'
     textInformation = 'No se porque estas viendo esto pero te diria que no te voltees'
     kv = """

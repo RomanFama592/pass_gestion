@@ -1,7 +1,7 @@
-from Interfaces.Components import MDBottomNavigationItemPers, FloatingButton
+from Interfaces.Components import ScreenCustomizable
 from Interfaces.Components import get_app
 
-class SettingInter(MDBottomNavigationItemPers):
+class SettingInter(ScreenCustomizable):
     name = 'Settings'
     icon = 'minus'
     table = ('userconfigs',"""(
@@ -19,10 +19,10 @@ class SettingInter(MDBottomNavigationItemPers):
     initTable = False
     saveNameInJSON = False
 
-    def on_tab_press(self, *args) -> None:
-        get_app().sm.get_screen("MI").children[0].disabled = True
+    def on_tab_press(self, *args):
+        get_app().sm.get_screen("MI").children[0].hideButton()
         return super().on_tab_press(*args)
 
     def on_pre_leave(self, *args):
-        get_app().sm.get_screen("MI").children[0].disabled = False
+        get_app().sm.get_screen("MI").children[0].showButton()
         return super().on_pre_leave(*args)
