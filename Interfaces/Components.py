@@ -270,7 +270,7 @@ class ListItemPers(MDBoxLayout):
                 if id == "id":
                     self.id = str(text)
                     # ver ids
-                    self.add_widget(MDLabel(text=str(text)))
+                    # self.add_widget(MDLabel(text=str(text)))
                 else:
                     self.add_widget(
                         MDTextFieldRows(
@@ -298,7 +298,7 @@ class ListItemPers(MDBoxLayout):
         parent = self.parent
         logic.deleteRow(get_app().pathBD, parent.parent.tableName, self.id)
         parent.remove_widget(self)
-        parent.calc_height()
+        parent.parent.calc_height()
 
     def hidePasswords(self, instance):
         for child in self.children:
