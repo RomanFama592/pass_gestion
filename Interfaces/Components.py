@@ -92,7 +92,6 @@ class FloatingButton(MDFloatingActionButton, MDTooltipPers):
         self.elevation = get_app().elevation
         self.tooltip_bg_color = get_app().theme_cls.primary_color
         self.seeButton = True
-
     def on_release(self):
         screen = get_app().sm.get_screen("MI").children[1].children[1].current_screen
         try:
@@ -135,6 +134,7 @@ class ScreenCustomizable(MDBottomNavigationItem):
         super().__init__(*args, **kwargs)
 
     def on_enter(self, *args):
+        super().on_enter(*args)
         if self.initTable:
             logic.createTable(get_app().pathBD, self.table)
             self.initTable = False
@@ -145,7 +145,6 @@ class ScreenCustomizable(MDBottomNavigationItem):
 
         if self.saveNameInJSON:
             get_app().primaryScreen = self.name
-        return super().on_enter(*args)
 
     def loadTheShowData(self):  # WIP reference
         self.showdata = Showdata(
@@ -271,7 +270,7 @@ class ListItemPers(MDBoxLayout):
                 if id == "id":
                     self.id = str(text)
                     # ver ids
-                    self.add_widget(MDLabel(text=str(text)))
+                    # self.add_widget(MDLabel(text=str(text)))
                 else:
                     self.add_widget(
                         MDTextFieldRows(
@@ -299,7 +298,7 @@ class ListItemPers(MDBoxLayout):
         parent = self.parent
         logic.deleteRow(get_app().pathBD, parent.parent.tableName, self.id)
         parent.remove_widget(self)
-        parent.calc_height()
+        parent.parent.calc_height()
 
     def hidePasswords(self, instance):
         for child in self.children:

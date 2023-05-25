@@ -82,6 +82,7 @@ def extractData(pathBD, pathKey, tableName):
         return (dataNew, data[1])
     elif data == False:
         return '1.query'
+
     elif data == None:
         return '1.bd'
 

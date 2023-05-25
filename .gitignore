@@ -6,3 +6,4 @@ setting.json
 .vscode
 env
 searchIcons.py
+extras/pruebas.py
